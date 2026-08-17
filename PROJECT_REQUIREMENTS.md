@@ -4,6 +4,10 @@ Project: OUD Staff & Landlord Portal
 
 Purpose: Build a secure bilingual web portal for internal staff and external landlords. The system will use one login page and route each user to the correct dashboard based on their assigned role and permissions.
 
+## Document Maintenance Rule
+
+When this document is updated, the existing content must be edited and expanded in place. Do not replace the whole document unless the user specifically asks for a full rewrite.
+
 ## Scope Summary
 
 The platform will support four main user roles:
@@ -373,4 +377,3 @@ Based on the current client proposal, these should be treated as future enhancem
 - Landlord export of on-screen charts.
 - Automated alerts for unusual occupancy or revenue numbers.
 - Full document version history for normal documents.
-
