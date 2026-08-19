@@ -191,6 +191,13 @@ These settings come from the project requirements and must be treated as global 
 - Commit and push only when the user explicitly asks for that specific git task.
 - The user is responsible for committing and pushing changes unless they clearly delegates that task for a specific request.
 
+### Database Change Settings
+
+- Always create and modify database tables, columns, indexes, and constraints through Laravel migrations.
+- Do not change the database schema manually with ad hoc SQL outside migrations.
+- Keep schema changes reversible where practical by implementing migration `down()` methods.
+- Security-sensitive enumerated values, such as user roles and login event types, must be constrained in migrations and represented in application code with enums where possible.
+
 ### Language Settings
 
 - The platform must support English and Arabic.

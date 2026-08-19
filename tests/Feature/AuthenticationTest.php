@@ -2,6 +2,9 @@
 
 namespace Tests\Feature;
 
+use App\Enums\UserRole;
+use App\Models\LoginEvent;
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -24,7 +27,7 @@ class AuthenticationTest extends TestCase
         $response = $this->post('/sign-up', [
             'name' => 'Property Owner',
             'email' => 'owner@example.com',
-            'role' => User::ROLE_LANDLORD,
+            'role' => UserRole::LANDLORD->value,
             'password' => 'password123',
             'password_confirmation' => 'password123',
         ]);
@@ -35,7 +38,10 @@ class AuthenticationTest extends TestCase
         $response->assertSessionHasNoErrors();
         $this->assertNotNull($user);
         $this->assertAuthenticatedAs($user);
-        $this->assertSame(User::ROLE_LANDLORD, $user->role);
+        $this->assertSame(UserRole::LANDLORD, $user->role);
+        $this->assertSame(UserRole::LANDLORD, $user->accountRole->code);
+        $this->assertNotNull($user->profile);
+        $this->assertTrue(LoginEvent::where('user_id', $user->id)->where('event', 'registered')->exists());
         $response->assertRedirect(route('dashboard.landlord'));
     }
 
@@ -43,7 +49,7 @@ class AuthenticationTest extends TestCase
     {
         $user = User::factory()->create([
             'email' => 'admin@example.com',
-            'role' => User::ROLE_ADMIN,
+            'role' => UserRole::ADMIN,
         ]);
 
         $response = $this->post('/login', [
@@ -52,6 +58,8 @@ class AuthenticationTest extends TestCase
         ]);
 
         $this->assertAuthenticatedAs($user);
+        $this->assertTrue(LoginEvent::where('user_id', $user->id)->where('event', 'login')->exists());
+        $this->assertNotNull($user->fresh()->last_login_at);
         $response->assertRedirect(route('dashboard.admin', absolute: false));
     }
 
@@ -62,6 +70,7 @@ class AuthenticationTest extends TestCase
         $response = $this->actingAs($user)->post('/logout');
 
         $this->assertGuest();
+        $this->assertTrue(LoginEvent::where('user_id', $user->id)->where('event', 'logout')->exists());
         $response->assertRedirect(route('login'));
     }
 
@@ -91,5 +100,15 @@ class AuthenticationTest extends TestCase
             ->assertOk()
             ->assertSee('dir="rtl"', false)
             ->assertSee('تسجيل الدخول إلى حسابك');
+    }
+
+    public function test_login_system_roles_are_seeded_by_migration(): void
+    {
+        foreach (UserRole::cases() as $role) {
+            $this->assertTrue(
+                Role::where('code', $role)->exists(),
+                "Expected {$role->value} role to exist."
+            );
+        }
     }
 }
