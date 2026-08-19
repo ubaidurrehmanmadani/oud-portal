@@ -16,11 +16,11 @@
 
     $adminGroups = [
         ['module' => 'users', 'label' => __('portal.users'), 'view' => __('portal.view_users'), 'create' => __('portal.create_user'), 'viewRoute' => 'admin.users.view', 'createRoute' => 'admin.users.create', 'icon' => 'users'],
-        ['module' => 'permissions', 'label' => __('portal.permissions'), 'view' => __('portal.view_permissions'), 'create' => __('portal.create_permission'), 'viewRoute' => 'admin.permissions.view', 'createRoute' => 'admin.permissions.create', 'icon' => 'audit'],
+        ['module' => 'permissions', 'label' => __('portal.permissions'), 'view' => __('portal.view_permissions'), 'create' => __('portal.create_permission'), 'viewRoute' => 'admin.permissions.view', 'createRoute' => 'admin.permissions.create', 'icon' => 'permissions'],
         ['module' => 'departments', 'label' => __('portal.departments'), 'view' => __('portal.view_departments'), 'create' => __('portal.create_department'), 'viewRoute' => 'admin.departments.view', 'createRoute' => 'admin.departments.create', 'icon' => 'departments'],
         ['module' => 'properties', 'label' => __('portal.properties'), 'view' => __('portal.view_properties'), 'create' => __('portal.create_property'), 'viewRoute' => 'admin.properties.view', 'createRoute' => 'admin.properties.create', 'icon' => 'properties'],
         ['module' => 'documents', 'label' => __('portal.documents'), 'view' => __('portal.view_documents'), 'create' => __('portal.upload_document'), 'viewRoute' => 'admin.documents.view', 'createRoute' => 'admin.documents.upload', 'icon' => 'documents'],
-        ['module' => 'academy', 'label' => __('portal.oud_academy'), 'view' => __('portal.view_training'), 'create' => __('portal.upload_training'), 'viewRoute' => 'admin.academy.view', 'createRoute' => 'admin.academy.upload', 'icon' => 'documents'],
+        ['module' => 'academy', 'label' => __('portal.oud_academy'), 'view' => __('portal.view_training'), 'create' => __('portal.upload_training'), 'viewRoute' => 'admin.academy.view', 'createRoute' => 'admin.academy.upload', 'icon' => 'academy'],
         ['module' => 'reports', 'label' => __('portal.reports'), 'view' => __('portal.view_reports'), 'create' => __('portal.create_report'), 'viewRoute' => 'admin.reports.view', 'createRoute' => 'admin.reports.create', 'icon' => 'reports'],
         ['module' => 'approvals', 'label' => __('portal.approvals'), 'view' => __('portal.view_approvals'), 'create' => __('portal.create_approval'), 'viewRoute' => 'admin.approvals.view', 'createRoute' => 'admin.approvals.create', 'icon' => 'approvals'],
         ['module' => 'announcements', 'label' => __('portal.announcements'), 'view' => __('portal.view_announcements'), 'create' => __('portal.create_announcement'), 'viewRoute' => 'admin.announcements.view', 'createRoute' => 'admin.announcements.create', 'icon' => 'announcements'],
@@ -41,17 +41,27 @@
         <a href="{{ url('/') }}" aria-label="{{ __('portal.dashboard_home') }}">
             <img src="{{ asset('images/oud-logo.webp') }}" alt="OUD Real Estate">
         </a>
-        <span>{{ __('portal.portal') }}</span>
     </div>
 
     <nav class="sidebar-nav">
-        <p class="sidebar-nav-label">{{ __('portal.workspace') }}</p>
+        <div class="sidebar-nav-heading">
+            <p class="sidebar-nav-label">{{ __('portal.workspace') }}</p>
+            <button
+                type="button"
+                class="sidebar-collapse-toggle"
+                data-sidebar-toggle
+                aria-label="{{ __('portal.toggle_sidebar') }}"
+                title="{{ __('portal.toggle_sidebar') }}"
+            >
+                <span aria-hidden="true"></span>
+            </button>
+        </div>
         @foreach ($primaryNavigation as $item)
             @php
                 $href = isset($item['route']) && Route::has($item['route']) ? route($item['route']) : ($item['href'] ?? '#');
                 $active = request()->routeIs($item['active']);
             @endphp
-            <a href="{{ $href }}" class="sidebar-link {{ $active ? 'is-active' : '' }}">
+            <a href="{{ $href }}" class="sidebar-link {{ $active ? 'is-active' : '' }}" data-label="{{ $item['label'] }}">
                 <span class="sidebar-icon sidebar-icon-{{ $item['icon'] }}" aria-hidden="true"></span>
                 <span>{{ $item['label'] }}</span>
             </a>
@@ -63,7 +73,7 @@
                     $open = request()->routeIs($group['viewRoute']) || request()->routeIs($group['createRoute']);
                 @endphp
                 <details class="sidebar-group" {{ $open ? 'open' : '' }}>
-                    <summary class="sidebar-link {{ $open ? 'is-active' : '' }}">
+                    <summary class="sidebar-link {{ $open ? 'is-active' : '' }}" data-label="{{ $group['label'] }}">
                         <span class="sidebar-icon sidebar-icon-{{ $group['icon'] }}" aria-hidden="true"></span>
                         <span>{{ $group['label'] }}</span>
                         <span class="sidebar-chevron" aria-hidden="true"></span>
@@ -85,7 +95,7 @@
                     $open = request()->routeIs($item['viewRoute']) || (isset($item['createRoute']) && request()->routeIs($item['createRoute']));
                 @endphp
                 <details class="sidebar-group" {{ $open ? 'open' : '' }}>
-                    <summary class="sidebar-link {{ $open ? 'is-active' : '' }}">
+                    <summary class="sidebar-link {{ $open ? 'is-active' : '' }}" data-label="{{ $item['label'] }}">
                         <span class="sidebar-icon sidebar-icon-{{ $item['icon'] }}" aria-hidden="true"></span>
                         <span>{{ $item['label'] }}</span>
                         <span class="sidebar-chevron" aria-hidden="true"></span>

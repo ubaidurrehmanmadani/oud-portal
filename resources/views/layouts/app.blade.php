@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ $title ?? __('portal.dashboard') }} | {{ __('portal.app_name') }}</title>
     <link rel="stylesheet" href="{{ asset('css/portal.css') }}">
+    <script>
+        if (localStorage.getItem('oud-sidebar-collapsed') === 'true') {
+            document.documentElement.classList.add('sidebar-is-collapsed');
+        }
+    </script>
 </head>
 <body>
     <div class="app-shell">
@@ -54,5 +59,6 @@
             </main>
         </div>
     </div>
+    <script src="{{ asset('js/portal.js') }}"></script>
 </body>
 </html>

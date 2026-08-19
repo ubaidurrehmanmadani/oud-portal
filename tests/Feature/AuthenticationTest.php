@@ -126,6 +126,8 @@ class AuthenticationTest extends TestCase
             ->assertSee('dashboard-sidebar')
             ->assertSee('mobile-menu')
             ->assertSee('profile-menu')
+            ->assertSee('data-sidebar-toggle', false)
+            ->assertSee('js/portal.js')
             ->assertSee('Profile settings')
             ->assertSee('Search documents, reports, approvals')
             ->assertSee('Admin Dashboard');

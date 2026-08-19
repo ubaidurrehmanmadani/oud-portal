@@ -557,4 +557,5 @@ return [
     'view_integrations' => 'عرض التكاملات',
     'update_settings' => 'تحديث الإعدادات',
     'view_settings' => 'عرض الإعدادات',
+    'toggle_sidebar' => 'طي أو توسيع الشريط الجانبي',
 ];

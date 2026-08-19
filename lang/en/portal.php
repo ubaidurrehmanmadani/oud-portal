@@ -557,4 +557,5 @@ return [
     'view_integrations' => 'View integrations',
     'update_settings' => 'Update settings',
     'view_settings' => 'View settings',
+    'toggle_sidebar' => 'Collapse or expand sidebar',
 ];
