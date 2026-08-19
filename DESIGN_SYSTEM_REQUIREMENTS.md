@@ -48,6 +48,8 @@ Every interface must be:
 
 The design should feel like a polished business portal, not a basic admin template.
 
+The portal design direction must align with the official OUD website: https://www.oud.sa/. Use the same luxury real-estate brand feel, including dark charcoal/black foundations, champagne-gold brand accents, refined spacing, understated borders, large editorial headings where appropriate, and restrained operational layouts for dashboards and forms.
+
 ## Consistency Rules
 
 - Use the same color palette everywhere unless a change is specifically requested.
@@ -92,38 +94,50 @@ The design should feel like a polished business portal, not a basic admin templa
 
 ## Colors
 
-Final color codes are still to be defined. After the palette is selected, these colors must be reused consistently across the full project.
+The color scheme should follow the official OUD website brand direction. These colors must be reused consistently across the full project unless the official brand palette is later provided by the client.
 
-- Primary: To be defined.
-- Secondary: To be defined.
-- Accent: To be defined.
-- Success: To be defined.
-- Warning: To be defined.
-- Danger: To be defined.
-- Background: To be defined.
-- Surface: To be defined.
-- Text: To be defined.
-- Muted text: To be defined.
-- Border: To be defined.
+- Primary: Deep charcoal / near black, `#080806`.
+- Secondary: Warm charcoal, `#171510`.
+- Accent: Champagne gold, `#d8c3a5`.
+- Accent dark: Antique gold, `#9f855f`.
+- Success: Muted green, `#2f6f50`.
+- Warning: Amber, `#b98226`.
+- Danger: Deep red, `#9b2f2b`.
+- Background: Warm ivory, `#f6f1e8`.
+- Dark background: Near black, `#080806`.
+- Surface: Soft ivory, `#fffaf1`.
+- Dark surface: `#13110d`.
+- Text: Ink charcoal, `#181612`.
+- Text on dark: Warm ivory, `#f8efe3`.
+- Muted text: Taupe gray, `#756b5f`.
+- Muted text on dark: `#c8b79f`.
+- Border: Soft sand, `#ded1bf`.
+- Border on dark: Translucent champagne, `rgba(216, 195, 165, 0.24)`.
 
 No page should introduce its own unrelated color palette without explicit approval.
 
 ## Typography
 
-- Font family: To be defined.
-- Base font size: To be defined.
-- Heading scale: To be defined.
-- Font weights: To be defined.
+Typography should follow the official OUD website's refined real-estate tone while remaining practical for dashboard screens.
+
+- English heading font family: `Georgia`, `Times New Roman`, serif, unless official licensed brand fonts are supplied.
+- English body font family: `Inter`, `Segoe UI`, Arial, sans-serif.
+- Arabic heading font family: `Noto Naskh Arabic`, `Amiri`, `Tahoma`, serif.
+- Arabic body font family: `Tajawal`, `Noto Kufi Arabic`, `Arial`, sans-serif.
+- Base font size: 16px for body text, 14px for dense labels and operational metadata.
+- Heading scale: Use large editorial headings on authentication/brand screens; use tighter, smaller headings inside dashboards, cards, tables, and forms.
+- Font weights: 400 regular body, 600 medium UI labels, 700 strong action labels, 500-700 headings depending on context.
+- Letter spacing must be 0 for normal text. Use modest uppercase tracking only for short English eyebrow labels.
 
 Typography must be consistent across all modules. Headings, labels, helper text, table text, button text, and dashboard metrics should follow the same type scale.
 
 ## Layout
 
-- Page width: To be defined.
-- Sidebar behavior: To be defined.
-- Header behavior: To be defined.
-- Grid and spacing scale: To be defined.
-- Mobile breakpoints: To be defined.
+- Page width: Public and auth content should use full-viewport compositions; operational screens should use a constrained content width near 1152px until detailed dashboards are defined.
+- Sidebar behavior: To be defined for role dashboards.
+- Header behavior: Auth screens should use the OUD logo prominently; dashboard headers should use the OUD logo at a smaller utility size.
+- Grid and spacing scale: Use generous whitespace and restrained panels on auth screens; use compact, repeatable spacing on admin and operational screens.
+- Mobile breakpoints: Auth forms must collapse to a single column with the OUD logo visible above the form.
 
 Layouts should be structured, balanced, and easy to scan. Admin and operational screens should prioritize clarity, speed, and repeat use.
 
@@ -161,8 +175,8 @@ The following components must have one shared style across the project:
 
 ## Icons And Imagery
 
-- Icon style: To be defined.
-- Image usage: To be defined.
+- Icon style: To be defined, but icons must stay minimal and not compete with the OUD logo.
+- Image usage: Use the official OUD logo from the official website in headers and authentication screens. Other imagery should match the official website's luxury property photography direction when client-approved assets are available.
 
 Icons should use one consistent style throughout the portal. Property photos, training media, and document previews should be displayed cleanly and should not disrupt layout consistency.
 
