@@ -201,6 +201,9 @@ These settings come from the project requirements and must be treated as global 
 ### Language Settings
 
 - The platform must support English and Arabic.
+- All user-facing copy must be stored in two separate language files: `lang/en/portal.php` for English and `lang/ar/portal.php` for Arabic.
+- Blade templates, controllers, dashboard components, buttons, labels, menus, and alerts must use translation keys instead of hard-coded text whenever the text is shown to users.
+- Whenever a page is created or updated, both English and Arabic translation entries must be added or updated at the same time.
 - Every user-facing screen should be planned for bilingual content.
 - Arabic support should include right-to-left layout support if confirmed as required.
 - Labels, buttons, tables, forms, charts, notifications, and validation messages must be ready for translation.

@@ -9,36 +9,56 @@ class DashboardController extends Controller
     public function admin(): View
     {
         return view('dashboards.role', [
-            'title' => 'Admin Dashboard',
-            'eyebrow' => 'Full portal control',
-            'items' => ['User management', 'Department setup', 'Property records', 'Report approval queue'],
+            'title' => __('portal.admin_dashboard'),
+            'eyebrow' => __('portal.admin_eyebrow'),
+            'items' => [
+                __('portal.user_management'),
+                __('portal.department_setup'),
+                __('portal.property_records'),
+                __('portal.report_approval_queue'),
+            ],
         ]);
     }
 
     public function manager(): View
     {
         return view('dashboards.role', [
-            'title' => 'Department Manager Dashboard',
-            'eyebrow' => 'Department workspace',
-            'items' => ['Department documents', 'Training material', 'Team announcements', 'Upload approvals'],
+            'title' => __('portal.manager_dashboard'),
+            'eyebrow' => __('portal.manager_eyebrow'),
+            'items' => [
+                __('portal.department_documents'),
+                __('portal.training_material'),
+                __('portal.team_announcements'),
+                __('portal.upload_approvals'),
+            ],
         ]);
     }
 
     public function employee(): View
     {
         return view('dashboards.role', [
-            'title' => 'Employee Dashboard',
-            'eyebrow' => 'Staff portal',
-            'items' => ['Recent documents', 'Department announcements', 'Oud Academy files', 'Document search'],
+            'title' => __('portal.employee_dashboard'),
+            'eyebrow' => __('portal.employee_eyebrow'),
+            'items' => [
+                __('portal.recent_documents'),
+                __('portal.department_announcements'),
+                __('portal.oud_academy_files'),
+                __('portal.document_search'),
+            ],
         ]);
     }
 
     public function landlord(): View
     {
         return view('dashboards.role', [
-            'title' => 'Landlord Dashboard',
-            'eyebrow' => 'Property owner portal',
-            'items' => ['Assigned properties', 'Performance KPIs', 'Reports and contracts', 'Approval requests'],
+            'title' => __('portal.landlord_dashboard'),
+            'eyebrow' => __('portal.landlord_eyebrow'),
+            'items' => [
+                __('portal.assigned_properties'),
+                __('portal.performance_kpis'),
+                __('portal.reports_and_contracts'),
+                __('portal.approval_requests'),
+            ],
         ]);
     }
 }

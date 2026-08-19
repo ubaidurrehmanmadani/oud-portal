@@ -111,4 +111,41 @@ class AuthenticationTest extends TestCase
             );
         }
     }
+
+    public function test_authenticated_dashboard_renders_professional_shell(): void
+    {
+        $user = User::factory()->create([
+            'name' => 'OUD Admin',
+            'email' => 'oud-admin@example.com',
+            'role' => UserRole::ADMIN,
+        ]);
+
+        $this->actingAs($user)
+            ->get('/dashboard/admin')
+            ->assertOk()
+            ->assertSee('dashboard-sidebar')
+            ->assertSee('mobile-menu')
+            ->assertSee('profile-menu')
+            ->assertSee('Profile settings')
+            ->assertSee('Search documents, reports, approvals')
+            ->assertSee('Admin Dashboard');
+    }
+
+    public function test_authenticated_dashboard_renders_arabic_translations(): void
+    {
+        $user = User::factory()->create([
+            'name' => 'OUD Admin',
+            'email' => 'oud-admin@example.com',
+            'role' => UserRole::ADMIN,
+        ]);
+
+        $this->withSession(['locale' => 'ar'])
+            ->actingAs($user)
+            ->get('/dashboard/admin')
+            ->assertOk()
+            ->assertSee('dir="rtl"', false)
+            ->assertSee('لوحة تحكم المشرف')
+            ->assertSee('إعدادات الملف الشخصي')
+            ->assertSee('البحث في المستندات والتقارير والموافقات');
+    }
 }

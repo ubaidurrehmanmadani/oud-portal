@@ -3,31 +3,54 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ $title ?? 'Dashboard' }} | OUD Portal</title>
+    <title>{{ $title ?? __('portal.dashboard') }} | {{ __('portal.app_name') }}</title>
     <link rel="stylesheet" href="{{ asset('css/portal.css') }}">
 </head>
 <body>
     <div class="app-shell">
-        <header class="app-header">
-            <div class="app-header-inner">
-                <a href="{{ url('/') }}" class="brand-link">
-                    <img src="{{ asset('images/oud-logo.webp') }}" alt="OUD Real Estate">
-                </a>
-                <div class="header-actions">
-                    @include('partials.language-switcher')
-                    <form method="POST" action="{{ route('logout') }}">
-                        @csrf
-                        <button type="submit" class="button button-secondary">
-                            {{ __('portal.logout') }}
-                        </button>
-                    </form>
+        @include('partials.dashboard-sidebar')
+
+        <div class="dashboard-workspace">
+            <header class="app-header">
+                <div class="app-header-inner">
+                    <details class="mobile-menu">
+                        <summary aria-label="{{ __('portal.open_navigation_menu') }}">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </summary>
+                        <div class="mobile-menu-panel">
+                            @include('partials.dashboard-sidebar')
+                        </div>
+                    </details>
+
+                    <div class="topbar-heading">
+                        <span>{{ __('portal.brand_eyebrow') }}</span>
+                        <strong>{{ $title ?? __('portal.dashboard') }}</strong>
+                    </div>
+
+                    <div class="header-actions">
+                        @include('partials.language-switcher')
+                        @include('partials.profile-menu')
+                    </div>
+                </div>
+            </header>
+
+            <div class="dashboard-toolbar">
+                <div class="toolbar-search">
+                    <span aria-hidden="true"></span>
+                    <input type="search" placeholder="{{ __('portal.search_placeholder') }}">
+                </div>
+                <div class="toolbar-actions">
+                    <a href="#" class="button button-secondary">{{ __('portal.new_upload') }}</a>
+                    <a href="#" class="button button-primary">{{ __('portal.create_report') }}</a>
                 </div>
             </div>
-        </header>
 
-        <main class="app-main">
-            @yield('content')
-        </main>
+            <main class="app-main">
+                @yield('content')
+            </main>
+        </div>
     </div>
 </body>
 </html>
