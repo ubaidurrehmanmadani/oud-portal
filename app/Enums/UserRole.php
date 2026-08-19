@@ -12,10 +12,10 @@ enum UserRole: string
     public function label(): string
     {
         return match ($this) {
-            self::ADMIN => 'Admin',
-            self::DEPARTMENT_MANAGER => 'Department Manager',
-            self::EMPLOYEE => 'Employee',
-            self::LANDLORD => 'Landlord',
+            self::ADMIN => __('portal.role_admin'),
+            self::DEPARTMENT_MANAGER => __('portal.role_department_manager'),
+            self::EMPLOYEE => __('portal.role_employee'),
+            self::LANDLORD => __('portal.role_landlord'),
         };
     }
 

@@ -210,6 +210,13 @@ These settings come from the project requirements and must be treated as global 
 - Design spacing must allow longer translated text without breaking layout.
 - Language and copy tone: professional, clear, and suitable for a business portal.
 
+### Page Naming Settings
+
+- Admin page files must use full descriptive page names instead of generic `index.blade.php` or `create.blade.php` names.
+- Use names that describe the actual sidebar page and action, such as `view-departments.blade.php`, `create-department.blade.php`, `view-users.blade.php`, and `upload-document.blade.php`.
+- Admin route URLs should also use explicit page slugs such as `/admin/departments/view-departments` and `/admin/departments/create-department`.
+- Shared partials may be used for repeated markup, but routed page files must remain explicitly named so the page purpose is clear from the file path.
+
 ### Role And Access Settings
 
 - The system has four main user roles: Admin, Department Manager, Employee, and Landlord.

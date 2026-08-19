@@ -36,16 +36,18 @@
                 </div>
             </header>
 
-            <div class="dashboard-toolbar">
-                <div class="toolbar-search">
-                    <span aria-hidden="true"></span>
-                    <input type="search" placeholder="{{ __('portal.search_placeholder') }}">
+            @unless (request()->routeIs('admin.*'))
+                <div class="dashboard-toolbar">
+                    <div class="toolbar-search">
+                        <span aria-hidden="true"></span>
+                        <input type="search" placeholder="{{ __('portal.search_placeholder') }}">
+                    </div>
+                    <div class="toolbar-actions">
+                        <a href="#" class="button button-secondary">{{ __('portal.new_upload') }}</a>
+                        <a href="#" class="button button-primary">{{ __('portal.create_report') }}</a>
+                    </div>
                 </div>
-                <div class="toolbar-actions">
-                    <a href="#" class="button button-secondary">{{ __('portal.new_upload') }}</a>
-                    <a href="#" class="button button-primary">{{ __('portal.create_report') }}</a>
-                </div>
-            </div>
+            @endunless
 
             <main class="app-main">
                 @yield('content')

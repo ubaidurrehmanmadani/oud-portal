@@ -148,4 +148,106 @@ class AuthenticationTest extends TestCase
             ->assertSee('إعدادات الملف الشخصي')
             ->assertSee('البحث في المستندات والتقارير والموافقات');
     }
+
+    public function test_admin_screens_are_available_to_admin_users(): void
+    {
+        $admin = User::factory()->create([
+            'role' => UserRole::ADMIN,
+        ]);
+
+        foreach ([
+            'admin.users.view' => 'admin.users.view-users',
+            'admin.permissions.view' => 'admin.permissions.view-permissions',
+            'admin.departments.view' => 'admin.departments.view-departments',
+            'admin.properties.view' => 'admin.properties.view-properties',
+            'admin.documents.view' => 'admin.documents.view-documents',
+            'admin.academy.view' => 'admin.academy.view-training',
+            'admin.reports.view' => 'admin.reports.view-reports',
+            'admin.approvals.view' => 'admin.approvals.view-approvals',
+            'admin.announcements.view' => 'admin.announcements.view-announcements',
+            'admin.notifications.view' => 'admin.notifications.view-notifications',
+            'admin.audit.view' => 'admin.audit.view-audit-logs',
+            'admin.integrations.view' => 'admin.integrations.view-integrations',
+            'admin.settings.view' => 'admin.settings.view-settings',
+        ] as $route => $view) {
+            $this->actingAs($admin)
+                ->get(route($route))
+                ->assertOk()
+                ->assertViewIs($view)
+                ->assertSee('admin-screen')
+                ->assertSee('admin-table')
+                ->assertSee('admin-filter-panel')
+                ->assertDontSee('admin-stat-grid')
+                ->assertDontSee('admin-screen-heading')
+                ->assertDontSee('admin-command-bar')
+                ->assertDontSee('admin-side-panel')
+                ->assertDontSee('dashboard-toolbar');
+        }
+    }
+
+    public function test_admin_create_pages_render_separate_form_views(): void
+    {
+        $admin = User::factory()->create([
+            'role' => UserRole::ADMIN,
+        ]);
+
+        foreach ([
+            'admin.users.create' => 'admin.users.create-user',
+            'admin.permissions.create' => 'admin.permissions.create-permission',
+            'admin.departments.create' => 'admin.departments.create-department',
+            'admin.properties.create' => 'admin.properties.create-property',
+            'admin.documents.upload' => 'admin.documents.upload-document',
+            'admin.academy.upload' => 'admin.academy.upload-training',
+            'admin.reports.create' => 'admin.reports.create-report',
+            'admin.approvals.create' => 'admin.approvals.create-approval',
+            'admin.announcements.create' => 'admin.announcements.create-announcement',
+            'admin.notifications.create' => 'admin.notifications.create-notification',
+            'admin.integrations.create' => 'admin.integrations.create-integration',
+            'admin.settings.update' => 'admin.settings.update-settings',
+        ] as $route => $view) {
+            $this->actingAs($admin)
+                ->get(route($route))
+                ->assertOk()
+                ->assertViewIs($view)
+                ->assertSee('admin-form-panel')
+                ->assertDontSee('admin-table')
+                ->assertDontSee('dashboard-toolbar');
+        }
+    }
+
+    public function test_legacy_admin_urls_redirect_to_current_pages(): void
+    {
+        $admin = User::factory()->create([
+            'role' => UserRole::ADMIN,
+        ]);
+
+        $this->actingAs($admin)
+            ->get('/admin/dashboard')
+            ->assertRedirect('/dashboard/admin');
+
+        $this->actingAs($admin)
+            ->get('/admin/users')
+            ->assertRedirect('/admin/users/view-users');
+    }
+
+    public function test_admin_page_files_use_explicit_page_names(): void
+    {
+        $genericPageFiles = [
+            ...glob(resource_path('views/admin/*/index.blade.php')),
+            ...glob(resource_path('views/admin/*/create.blade.php')),
+        ];
+
+        $this->assertSame([], $genericPageFiles);
+    }
+
+    public function test_admin_screens_are_forbidden_to_non_admin_users(): void
+    {
+        $employee = User::factory()->create([
+            'role' => UserRole::EMPLOYEE,
+        ]);
+
+        $this->actingAs($employee)
+            ->get(route('admin.users.view'))
+            ->assertForbidden();
+    }
 }
