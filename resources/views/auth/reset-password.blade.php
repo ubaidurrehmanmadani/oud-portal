@@ -2,9 +2,9 @@
 
 @section('content')
     <div class="form-heading">
-        <p class="eyebrow">Secure reset</p>
-        <h2>Set a new password</h2>
-        <p>Choose a new password with at least eight characters.</p>
+        <p class="eyebrow">{{ __('portal.secure_reset') }}</p>
+        <h2>{{ __('portal.reset_password_title') }}</h2>
+        <p>{{ __('portal.reset_password_intro') }}</p>
     </div>
 
     @include('auth.partials.errors')
@@ -15,22 +15,22 @@
         <input type="hidden" name="token" value="{{ $token }}">
 
         <div class="field">
-            <label for="email">Email address</label>
+            <label for="email">{{ __('portal.email') }}</label>
             <input id="email" name="email" type="email" autocomplete="email" value="{{ old('email', $email) }}" required autofocus>
         </div>
 
         <div class="field">
-            <label for="password">New password</label>
+            <label for="password">{{ __('portal.new_password') }}</label>
             <input id="password" name="password" type="password" autocomplete="new-password" required>
         </div>
 
         <div class="field">
-            <label for="password_confirmation">Confirm new password</label>
+            <label for="password_confirmation">{{ __('portal.confirm_new_password') }}</label>
             <input id="password_confirmation" name="password_confirmation" type="password" autocomplete="new-password" required>
         </div>
 
         <button type="submit" class="button button-primary button-full">
-            Reset password
+            {{ __('portal.reset_password_button') }}
         </button>
     </form>
 @endsection

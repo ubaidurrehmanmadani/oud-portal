@@ -79,4 +79,17 @@ class AuthenticationTest extends TestCase
 
         Notification::assertSentTo($user, ResetPassword::class);
     }
+
+    public function test_users_can_switch_the_interface_language(): void
+    {
+        $this->post('/language/ar')
+            ->assertRedirect()
+            ->assertSessionHas('locale', 'ar');
+
+        $this->withSession(['locale' => 'ar'])
+            ->get('/login')
+            ->assertOk()
+            ->assertSee('dir="rtl"', false)
+            ->assertSee('تسجيل الدخول إلى حسابك');
+    }
 }

@@ -2,9 +2,9 @@
 
 @section('content')
     <div class="form-heading">
-        <p class="eyebrow">Create access</p>
-        <h2>Sign up</h2>
-        <p>Create an account and choose the role assigned for portal access.</p>
+        <p class="eyebrow">{{ __('portal.create_access') }}</p>
+        <h2>{{ __('portal.sign_up_title') }}</h2>
+        <p>{{ __('portal.sign_up_intro') }}</p>
     </div>
 
     @include('auth.partials.errors')
@@ -13,17 +13,17 @@
         @csrf
 
         <div class="field">
-            <label for="name">Full name</label>
+            <label for="name">{{ __('portal.full_name') }}</label>
             <input id="name" name="name" type="text" autocomplete="name" value="{{ old('name') }}" required autofocus>
         </div>
 
         <div class="field">
-            <label for="email">Email address</label>
+            <label for="email">{{ __('portal.email') }}</label>
             <input id="email" name="email" type="email" autocomplete="email" value="{{ old('email') }}" required>
         </div>
 
         <div class="field">
-            <label for="role">Account role</label>
+            <label for="role">{{ __('portal.account_role') }}</label>
             <select id="role" name="role" required>
                 @foreach ($roles as $value => $label)
                     <option value="{{ $value }}" @selected(old('role', 'employee') === $value)>{{ $label }}</option>
@@ -32,22 +32,22 @@
         </div>
 
         <div class="field">
-            <label for="password">Password</label>
+            <label for="password">{{ __('portal.password') }}</label>
             <input id="password" name="password" type="password" autocomplete="new-password" required>
         </div>
 
         <div class="field">
-            <label for="password_confirmation">Confirm password</label>
+            <label for="password_confirmation">{{ __('portal.confirm_password') }}</label>
             <input id="password_confirmation" name="password_confirmation" type="password" autocomplete="new-password" required>
         </div>
 
         <button type="submit" class="button button-primary button-full">
-            Create account
+            {{ __('portal.create_account') }}
         </button>
     </form>
 
     <p class="form-footer">
-        Already have an account?
-        <a href="{{ route('login') }}">Login</a>
+        {{ __('portal.already_have_account') }}
+        <a href="{{ route('login') }}">{{ __('portal.login_button') }}</a>
     </p>
 @endsection

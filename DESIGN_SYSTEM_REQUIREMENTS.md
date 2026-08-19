@@ -184,6 +184,13 @@ Icons should use one consistent style throughout the portal. Property photos, tr
 
 These settings come from the project requirements and must be treated as global system rules during implementation.
 
+### Git Workflow Settings
+
+- Do not run `git add`, `git commit`, or `git push` automatically after making project changes.
+- Leave changed files unstaged unless the user specifically asks for staging.
+- Commit and push only when the user explicitly asks for that specific git task.
+- The user is responsible for committing and pushing changes unless they clearly delegates that task for a specific request.
+
 ### Language Settings
 
 - The platform must support English and Arabic.

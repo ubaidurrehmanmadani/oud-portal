@@ -13,12 +13,15 @@
                 <a href="{{ url('/') }}" class="brand-link">
                     <img src="{{ asset('images/oud-logo.webp') }}" alt="OUD Real Estate">
                 </a>
-                <form method="POST" action="{{ route('logout') }}">
-                    @csrf
-                    <button type="submit" class="button button-secondary">
-                        Logout
-                    </button>
-                </form>
+                <div class="header-actions">
+                    @include('partials.language-switcher')
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit" class="button button-secondary">
+                            {{ __('portal.logout') }}
+                        </button>
+                    </form>
+                </div>
             </div>
         </header>
 

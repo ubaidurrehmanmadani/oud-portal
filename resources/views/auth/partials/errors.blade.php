@@ -1,6 +1,6 @@
 @if ($errors->any())
     <div class="alert alert-error">
-        <p>Please check the form.</p>
+        <p>{{ __('portal.check_form') }}</p>
         <ul>
             @foreach ($errors->all() as $error)
                 <li>{{ $error }}</li>
