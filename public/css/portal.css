@@ -1,0 +1,363 @@
+* {
+    box-sizing: border-box;
+}
+
+html {
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    color: #16211d;
+    background: #f5f7f4;
+}
+
+body {
+    min-height: 100vh;
+    margin: 0;
+    background: #f5f7f4;
+    color: #16211d;
+}
+
+a {
+    color: #6f7e36;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+a:hover {
+    color: #4f5f1f;
+}
+
+.auth-shell {
+    display: grid;
+    min-height: 100vh;
+}
+
+.auth-brand-panel {
+    display: none;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 40px 48px;
+    background: #17372f;
+    color: #fff;
+}
+
+.auth-brand-title {
+    max-width: 620px;
+    margin: 40px 0 0;
+    font-size: 52px;
+    line-height: 1.05;
+    font-weight: 700;
+    letter-spacing: 0;
+}
+
+.auth-feature-list {
+    display: grid;
+    gap: 16px;
+    font-size: 14px;
+}
+
+.auth-feature {
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.10);
+}
+
+.auth-feature p {
+    margin: 0;
+    font-weight: 700;
+}
+
+.auth-feature span {
+    display: block;
+    margin-top: 8px;
+    color: #d9e4d5;
+    line-height: 1.6;
+}
+
+.auth-form-panel {
+    display: flex;
+    min-height: 100vh;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+}
+
+.auth-form-wrap {
+    width: 100%;
+    max-width: 448px;
+}
+
+.auth-mobile-heading {
+    margin-bottom: 32px;
+}
+
+.auth-mobile-heading h1,
+.form-heading h2,
+.page-heading h1 {
+    margin: 10px 0 0;
+    font-size: 32px;
+    line-height: 1.15;
+    font-weight: 700;
+    letter-spacing: 0;
+}
+
+.eyebrow {
+    margin: 0;
+    color: #6f7e36;
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+.eyebrow-light {
+    color: #c9d8ad;
+}
+
+.form-heading {
+    margin-bottom: 32px;
+}
+
+.form-heading p:not(.eyebrow),
+.page-heading p:not(.eyebrow) {
+    margin: 12px 0 0;
+    color: #68756f;
+    font-size: 14px;
+    line-height: 1.7;
+}
+
+.auth-form {
+    display: grid;
+    gap: 20px;
+}
+
+.field label,
+.field-row label {
+    display: block;
+    color: #16211d;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.field-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.field-row a {
+    flex-shrink: 0;
+    font-size: 14px;
+}
+
+.field input,
+.field select {
+    width: 100%;
+    min-height: 48px;
+    margin-top: 8px;
+    border: 1px solid #cfd8d1;
+    border-radius: 8px;
+    background: #fff;
+    padding: 12px 16px;
+    color: #16211d;
+    font: inherit;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.field input:focus,
+.field select:focus {
+    border-color: #6f7e36;
+    box-shadow: 0 0 0 4px #dfe8c3;
+}
+
+.check-field {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: #46524c;
+    font-size: 14px;
+}
+
+.check-field input {
+    width: 16px;
+    height: 16px;
+    accent-color: #6f7e36;
+}
+
+.button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 40px;
+    border-radius: 8px;
+    padding: 10px 16px;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.button-primary {
+    min-height: 48px;
+    border: 1px solid #17372f;
+    background: #17372f;
+    color: #fff;
+}
+
+.button-primary:hover {
+    background: #102820;
+}
+
+.button-secondary {
+    border: 1px solid #cfd8d1;
+    background: #fff;
+    color: #17372f;
+}
+
+.button-secondary:hover {
+    background: #eef3eb;
+}
+
+.button-full {
+    width: 100%;
+}
+
+.form-footer {
+    margin: 28px 0 0;
+    color: #68756f;
+    font-size: 14px;
+    text-align: center;
+}
+
+.alert {
+    margin-bottom: 20px;
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.alert p {
+    margin: 0;
+    font-weight: 800;
+}
+
+.alert ul {
+    margin: 8px 0 0;
+    padding-left: 20px;
+}
+
+.alert-error {
+    border: 1px solid #f2b6ae;
+    background: #fff0ee;
+    color: #8f2e22;
+}
+
+.alert-success {
+    border: 1px solid #a9d5bc;
+    background: #eefaf2;
+    color: #17633a;
+    font-weight: 700;
+}
+
+.app-shell {
+    min-height: 100vh;
+}
+
+.app-header {
+    border-bottom: 1px solid #d8e0d9;
+    background: #fff;
+}
+
+.app-header-inner {
+    display: flex;
+    max-width: 1152px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin: 0 auto;
+    padding: 16px 20px;
+}
+
+.brand-link {
+    color: #17372f;
+    font-size: 14px;
+    font-weight: 900;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+}
+
+.app-main {
+    max-width: 1152px;
+    margin: 0 auto;
+    padding: 40px 20px;
+}
+
+.page-heading {
+    margin-bottom: 32px;
+}
+
+.page-heading p:not(.eyebrow) {
+    max-width: 672px;
+}
+
+.dashboard-grid {
+    display: grid;
+    gap: 16px;
+}
+
+.dashboard-card {
+    min-height: 132px;
+    border: 1px solid #d8e0d9;
+    border-radius: 8px;
+    background: #fff;
+    padding: 20px;
+    box-shadow: 0 1px 2px rgba(22, 33, 29, 0.05);
+}
+
+.dashboard-card p {
+    margin: 0;
+    color: #17372f;
+    font-size: 14px;
+    font-weight: 800;
+}
+
+.dashboard-card span {
+    display: block;
+    margin-top: 12px;
+    color: #68756f;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+@media (min-width: 640px) {
+    .auth-form-panel {
+        padding-left: 32px;
+        padding-right: 32px;
+    }
+
+    .dashboard-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (min-width: 1024px) {
+    .auth-shell {
+        grid-template-columns: 1.05fr 0.95fr;
+    }
+
+    .auth-brand-panel {
+        display: flex;
+    }
+
+    .auth-mobile-heading {
+        display: none;
+    }
+
+    .dashboard-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+}
