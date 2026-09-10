@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="{{ asset('oud/application.css') }}">
     <script src="{{ asset('oud/application.js') }}" defer></script>
 </head>
-<body>
+<body data-portal-shell>
 <div class="portal {{ $isLandlord ? 'landlord-portal' : '' }}">
     <aside class="sidebar">
         <div class="sidebar-brand"><a href="{{ route(auth()->user()->dashboardRouteName()) }}"><img src="{{ asset('oud/assets/oud-logo.png') }}" alt="OUD Real Estate"></a></div>
@@ -33,7 +33,7 @@
     </aside>
     <main class="portal-main">
         <header class="topbar">
-            <div class="topbar-title"><span>{{ $isLandlord ? 'Oud Compass | Landlord portal' : __('portal.brand_eyebrow') }}</span><strong>{{ $title }}</strong></div>
+            <div class="topbar-title"><span>{{ $isLandlord ? 'Oud Compass | Landlord portal' : __('portal.brand_eyebrow') }}</span><strong data-page-title>{{ $title }}</strong></div>
             <div class="topbar-actions">
                 @include('partials.language-switcher')
                 @if ($isLandlord && request()->routeIs('dashboard.landlord') && $properties->isNotEmpty())
@@ -50,7 +50,7 @@
                 <form method="POST" action="{{ route('logout') }}">@csrf<button class="button button-secondary">{{ __('portal.logout') }}</button></form>
             </div>
         </header>
-        <section class="content {{ $isLandlord ? 'landlord-content' : '' }}">
+        <section class="content {{ $isLandlord ? 'landlord-content' : '' }}" data-page-content>
             @if ($isLandlord && $properties->isNotEmpty() && !request()->routeIs('workspace.*') && !request()->routeIs('dashboard.landlord'))
                 <form method="GET" class="workspace-filters">
                     <label for="property">{{ __('workspace.property') }}</label>

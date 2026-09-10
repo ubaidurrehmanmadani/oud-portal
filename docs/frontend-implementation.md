@@ -83,6 +83,8 @@ To populate an existing installation, use an admin account to create departments
 
 Landlord list screens use one shared action convention: row content expands on the left and every action stays in a right-side cluster. View and Review use the dark primary pill, Download uses the outlined neutral variant, and Approve uses the olive success variant. This applies consistently to Properties, Reports, Documents, and Approvals and remains responsive by moving the action cluster below the row content on narrow screens.
 
+Secure portal GET navigation is progressively enhanced in `public/oud/application.js`: internal screen links fetch the next rendered page and replace only `[data-page-content]`, update the page title and active sidebar link, and preserve the sidebar/topbar DOM. Direct navigation remains the fallback when JavaScript is unavailable, a download is requested, or the session expires.
+
 When the owner supplies a new reference folder:
 
 1. Compare the updated HTML, CSS, and prototype JavaScript with the integrated screens.
