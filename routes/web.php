@@ -56,6 +56,7 @@ Route::middleware('auth')->group(function () {
             ->name($workspace.'.index');
     }
     Route::get('/workspace/items/{item}', [WorkspaceController::class, 'show'])->whereNumber('item')->name('workspace.show');
+    Route::get('/landlord/properties/{property}/financials', [WorkspaceController::class, 'financials'])->whereNumber('property')->name('landlord.financials');
     Route::get('/workspace/items/{item}/download', [WorkspaceController::class, 'download'])->whereNumber('item')->name('workspace.download');
     Route::post('/workspace/items/{item}/decision', [WorkspaceController::class, 'decide'])->whereNumber('item')->name('workspace.decide');
 

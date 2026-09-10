@@ -16,7 +16,11 @@ Artisan::command('oud:sync-design-assets', function () {
         return 1;
     }
     File::ensureDirectoryExists(public_path('oud'));
-    File::copy($source.'/styles.css', public_path('oud/styles.css'));
+    foreach (['styles.css', 'excel-reporting.css', 'report-sidebar.css', 'user-role-button.css', 'user-role-popup.css'] as $stylesheet) {
+        if (is_file($source.'/'.$stylesheet)) {
+            File::copy($source.'/'.$stylesheet, public_path('oud/'.$stylesheet));
+        }
+    }
     File::copyDirectory($source.'/assets', public_path('oud/assets'));
     $this->info('OUD design assets synchronized. Review Blade templates and application.css for structural changes.');
 })->purpose('Copy supplied OUD styles and assets without importing demo JavaScript');

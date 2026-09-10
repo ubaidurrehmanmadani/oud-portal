@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Enums\UserRole;
 use App\Models\WorkspaceItem;
+use App\Support\FinancialReport;
+use Illuminate\Support\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -22,6 +24,13 @@ class WorkspaceController extends Controller
             $query->where('property_id', $data['selectedProperty']->id);
         }
         $counts = (clone $query)->selectRaw('kind, count(*) as total')->groupBy('kind')->pluck('total', 'kind');
+
+        if ($data['isLandlord']) {
+            $summaries = WorkspaceItem::visibleTo($request->user())->where('kind', 'report')->where('status', 'published')
+                ->orderByDesc('report_month')->latest('published_at')->latest('id')->get()->unique('property_id')->keyBy('property_id');
+
+            return view('workspace.landlord-dashboard', $data + ['title' => __('financial.title'), 'summaries' => $summaries]);
+        }
 
         return view('workspace.dashboard', $data + [
             'title' => $expected === UserRole::LANDLORD && $request->routeIs('dashboard.landlord')
@@ -80,6 +89,10 @@ class WorkspaceController extends Controller
     {
         $record = WorkspaceItem::visibleTo($request->user())->with(['property', 'department'])->findOrFail($item);
 
+        if ($record->kind === 'report' && $record->report_month && $request->user()->role === UserRole::LANDLORD) {
+            return redirect()->route('landlord.financials', ['property' => $record->property_id, 'year' => $record->report_month->year, 'month' => $record->report_month->month]);
+        }
+
         return view('workspace.detail', $this->context($request) + ['title' => $record->title, 'item' => $record]);
     }
 
@@ -89,6 +102,27 @@ class WorkspaceController extends Controller
         abort_unless($record->file_path && Storage::disk('local')->exists($record->file_path), 404);
 
         return Storage::disk('local')->download($record->file_path, $record->file_name);
+    }
+
+    public function financials(Request $request, int $property)
+    {
+        $data = $this->context($request);
+        $selectedProperty = $data['properties']->firstWhere('id', $property);
+        abort_unless($selectedProperty, 404);
+        $request->validate(['year' => 'nullable|integer|between:1900,2100', 'month' => 'nullable|integer|between:1,12']);
+        $query = WorkspaceItem::visibleTo($request->user())->where('kind', 'report')->where('status', 'published')
+            ->where('property_id', $property)->whereNotNull('report_month');
+        $latest = (clone $query)->orderByDesc('report_month')->first();
+        $year = (int) $request->input('year', $latest?->report_month->year ?? now()->year);
+        $month = (int) $request->input('month', $latest && $latest->report_month->year === $year ? $latest->report_month->month : 1);
+        $history = (clone $query)->whereYear('report_month', $year)->orderBy('report_month')->get()
+            ->mapWithKeys(fn ($record) => [$record->report_month->month => new FinancialReport($record)]);
+        $report = $history->get($month, new FinancialReport(null));
+        $years = (clone $query)->pluck('report_month')->map(fn ($date) => Carbon::parse($date)->year)->push($year)->unique()->sortDesc()->values();
+
+        return view('workspace.financial-report', array_replace($data, compact('selectedProperty', 'year', 'month', 'history', 'report', 'years')) + [
+            'title' => $selectedProperty->name.' · '.__('financial.title'), 'section' => 'reports', 'isFinancialReport' => true,
+        ]);
     }
 
     public function decide(Request $request, int $item)

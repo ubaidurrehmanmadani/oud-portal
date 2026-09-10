@@ -13,7 +13,7 @@ class WorkspaceItem extends Model
 
     protected function casts(): array
     {
-        return ['published_at' => 'datetime', 'decided_at' => 'datetime', 'occupancy' => 'decimal:2', 'net_revenue' => 'decimal:2', 'leased_area' => 'decimal:2', 'amount' => 'decimal:2'];
+        return ['published_at' => 'datetime', 'decided_at' => 'datetime', 'report_month' => 'date', 'financial_data' => 'array', 'occupancy' => 'decimal:2', 'net_revenue' => 'decimal:2', 'leased_area' => 'decimal:2', 'amount' => 'decimal:2'];
     }
 
     public function property(): BelongsTo
@@ -35,7 +35,11 @@ class WorkspaceItem extends Model
         if ($user->role === UserRole::LANDLORD) {
             $query->where('audience', 'landlord')
                 ->whereIn('property_id', $user->properties()->select('properties.id'))
-                ->whereIn('status', ['published', 'pending', 'approved', 'rejected']);
+                ->where(function (Builder $visible) {
+                    $visible->where('status', 'published')->orWhere(function (Builder $approval) {
+                        $approval->where('kind', 'approval')->whereIn('status', ['pending', 'approved', 'rejected']);
+                    });
+                });
         } else {
             $query->where('audience', 'staff')->whereNull('property_id')->where('status', 'published')
                 ->where(function (Builder $q) use ($user) {
