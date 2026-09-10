@@ -7,6 +7,26 @@
 <a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
 </p>
 
+## OUD frontend design reference
+
+The root-level `OUD_project/` folder contains the frontend screens supplied by the frontend developer and is the design reference for this application. When implementing or updating screens for each role, adopt the corresponding designs, layouts, styling, assets, and interactions from this folder, while integrating the application's real data, workflows, and role permissions.
+
+This folder may be updated or replaced with newer designs. When the project owner announces an update and requests frontend changes, review the latest contents and apply the relevant changes to the application's role-specific screens. Treat the folder as the supplied design reference; implement application changes in the appropriate application files.
+
+## Frontend implementation
+
+The supplied OUD designs are now integrated into Laravel authentication, staff and landlord workspaces, and the shared admin layout. Routes, database-backed content, private downloads, department/property assignments, and landlord decisions are implemented.
+
+See [the implementation documentation](docs/frontend-implementation.md) for the screen map, database changes, access rules, verification, current limits, and the process for adopting future design updates.
+
+```bash
+php artisan migrate
+php artisan oud:sync-design-assets
+php artisan test
+```
+
+Use an admin account to create departments/properties and assign existing users, then publish documents, training, announcements, reports, and approval requests through **Manage content**. Empty workspaces show real empty states until records are added.
+
 ## About Laravel
 
 Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:

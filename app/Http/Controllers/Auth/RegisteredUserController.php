@@ -19,7 +19,7 @@ class RegisteredUserController extends Controller
     public function create(): View
     {
         return view('auth.register', [
-            'roles' => User::roles(),
+            'roles' => collect(User::roles())->only(['employee', 'landlord'])->all(),
         ]);
     }
 
@@ -28,7 +28,7 @@ class RegisteredUserController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:users,email'],
-            'role' => ['required', Rule::enum(UserRole::class)],
+            'role' => ['required', Rule::in([UserRole::EMPLOYEE->value, UserRole::LANDLORD->value])],
             'password' => ['required', 'confirmed', Password::min(8)],
         ]);
 

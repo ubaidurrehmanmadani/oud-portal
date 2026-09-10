@@ -1,7 +1,7 @@
 @extends('layouts.auth', ['title' => 'Forgot Password | OUD Portal'])
 
 @section('content')
-    <div class="form-heading">
+    <div class="auth-heading">
         <p class="eyebrow">{{ __('portal.password_help') }}</p>
         <h2>{{ __('portal.forgot_password_title') }}</h2>
         <p>{{ __('portal.forgot_password_intro') }}</p>
@@ -22,7 +22,7 @@
         </button>
     </form>
 
-    <p class="form-footer">
+    <p class="auth-footer">
         {{ __('portal.remembered_password') }}
         <a href="{{ route('login') }}">{{ __('portal.back_to_login') }}</a>
     </p>

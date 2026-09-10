@@ -1,12 +1,14 @@
 <?php
 
+use App\Http\Controllers\AccountManagementController;
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
-use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ContentController;
 use App\Http\Controllers\LocaleController;
+use App\Http\Controllers\WorkspaceController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -34,10 +36,28 @@ Route::middleware('guest')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
 
-    Route::get('/dashboard/admin', [DashboardController::class, 'admin'])->name('dashboard.admin');
-    Route::get('/dashboard/department-manager', [DashboardController::class, 'manager'])->name('dashboard.manager');
-    Route::get('/dashboard/employee', [DashboardController::class, 'employee'])->name('dashboard.employee');
-    Route::get('/dashboard/landlord', [DashboardController::class, 'landlord'])->name('dashboard.landlord');
+    Route::get('/dashboard/admin', [WorkspaceController::class, 'dashboard'])->name('dashboard.admin');
+    Route::get('/dashboard/department-manager', [WorkspaceController::class, 'dashboard'])->name('dashboard.manager');
+    Route::get('/dashboard/employee', [WorkspaceController::class, 'dashboard'])->name('dashboard.employee');
+    Route::get('/dashboard/landlord', [WorkspaceController::class, 'dashboard'])->name('dashboard.landlord');
+
+    Route::get('/accounts/{kind}/{id}/edit', [AccountManagementController::class, 'edit'])->middleware('admin')->where('kind', 'user|property|department')->whereNumber('id')->name('accounts.edit');
+    Route::put('/accounts/{kind}/{id}', [AccountManagementController::class, 'update'])->middleware('admin')->where('kind', 'user|property|department')->whereNumber('id')->name('accounts.update');
+
+    Route::get('/content', [ContentController::class, 'index'])->name('content.index');
+    Route::get('/content/create', [ContentController::class, 'create'])->name('content.create');
+    Route::post('/content', [ContentController::class, 'store'])->name('content.store');
+    Route::get('/content/{item}/edit', [ContentController::class, 'edit'])->whereNumber('item')->name('content.edit');
+    Route::put('/content/{item}', [ContentController::class, 'update'])->whereNumber('item')->name('content.update');
+
+    foreach (['staff', 'landlord'] as $workspace) {
+        Route::get('/'.$workspace.'/{section}', [WorkspaceController::class, 'index'])
+            ->where('section', $workspace === 'staff' ? 'documents|training|announcements|search' : 'properties|reports|documents|approvals')
+            ->name($workspace.'.index');
+    }
+    Route::get('/workspace/items/{item}', [WorkspaceController::class, 'show'])->whereNumber('item')->name('workspace.show');
+    Route::get('/workspace/items/{item}/download', [WorkspaceController::class, 'download'])->whereNumber('item')->name('workspace.download');
+    Route::post('/workspace/items/{item}/decision', [WorkspaceController::class, 'decide'])->whereNumber('item')->name('workspace.decide');
 
     Route::middleware('admin')->prefix('admin')->name('admin.')->group(function () {
         Route::redirect('/', '/dashboard/admin')->name('home');

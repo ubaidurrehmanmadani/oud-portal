@@ -1,7 +1,7 @@
 @extends('layouts.auth', ['title' => 'Login | OUD Portal'])
 
 @section('content')
-    <div class="form-heading">
+    <div class="auth-heading">
         <p class="eyebrow">{{ __('portal.welcome_back') }}</p>
         <h2>{{ __('portal.login_title') }}</h2>
         <p>{{ __('portal.login_intro') }}</p>
@@ -22,7 +22,7 @@
                 <label for="password">{{ __('portal.password') }}</label>
                 <a href="{{ route('password.request') }}">{{ __('portal.forgot_password_link') }}</a>
             </div>
-            <input id="password" name="password" type="password" autocomplete="current-password" required>
+            <div class="password-field"><input id="password" name="password" type="password" autocomplete="current-password" required><button type="button" class="password-toggle" aria-label="{{ __('workspace.show_password') }}" aria-pressed="false">{{ __('workspace.show_password') }}</button></div>
         </div>
 
         <label class="check-field">
@@ -35,7 +35,7 @@
         </button>
     </form>
 
-    <p class="form-footer">
+    <p class="auth-footer">
         {{ __('portal.need_account') }}
         <a href="{{ route('register') }}">{{ __('portal.sign_up') }}</a>
     </p>

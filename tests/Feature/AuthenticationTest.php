@@ -123,13 +123,10 @@ class AuthenticationTest extends TestCase
         $this->actingAs($user)
             ->get('/dashboard/admin')
             ->assertOk()
-            ->assertSee('dashboard-sidebar')
-            ->assertSee('mobile-menu')
-            ->assertSee('profile-menu')
-            ->assertSee('data-sidebar-toggle', false)
-            ->assertSee('js/portal.js')
-            ->assertSee('Profile settings')
-            ->assertSee('Search documents, reports, approvals')
+            ->assertSee('oud/styles.css')
+            ->assertSee('OUD Admin')
+            ->assertSee(route('logout'))
+            ->assertSee(route('content.index'))
             ->assertSee('Admin Dashboard');
     }
 
@@ -147,8 +144,8 @@ class AuthenticationTest extends TestCase
             ->assertOk()
             ->assertSee('dir="rtl"', false)
             ->assertSee('لوحة تحكم المشرف')
-            ->assertSee('إعدادات الملف الشخصي')
-            ->assertSee('البحث في المستندات والتقارير والموافقات');
+            ->assertSee('إدارة المحتوى')
+            ->assertSee('مساحة العمل');
     }
 
     public function test_admin_screens_are_available_to_admin_users(): void
@@ -178,7 +175,6 @@ class AuthenticationTest extends TestCase
                 ->assertViewIs($view)
                 ->assertSee('admin-screen')
                 ->assertSee('admin-table')
-                ->assertSee('admin-filter-panel')
                 ->assertDontSee('admin-stat-grid')
                 ->assertDontSee('admin-screen-heading')
                 ->assertDontSee('admin-command-bar')
@@ -195,7 +191,6 @@ class AuthenticationTest extends TestCase
 
         foreach ([
             'admin.users.create' => 'admin.users.create-user',
-            'admin.permissions.create' => 'admin.permissions.create-permission',
             'admin.departments.create' => 'admin.departments.create-department',
             'admin.properties.create' => 'admin.properties.create-property',
             'admin.documents.upload' => 'admin.documents.upload-document',
@@ -203,15 +198,13 @@ class AuthenticationTest extends TestCase
             'admin.reports.create' => 'admin.reports.create-report',
             'admin.approvals.create' => 'admin.approvals.create-approval',
             'admin.announcements.create' => 'admin.announcements.create-announcement',
-            'admin.notifications.create' => 'admin.notifications.create-notification',
-            'admin.integrations.create' => 'admin.integrations.create-integration',
-            'admin.settings.update' => 'admin.settings.update-settings',
         ] as $route => $view) {
             $this->actingAs($admin)
                 ->get(route($route))
                 ->assertOk()
                 ->assertViewIs($view)
-                ->assertSee('admin-form-panel')
+                ->assertSee('content-form')
+                ->assertSee('method="POST"', false)
                 ->assertDontSee('admin-table')
                 ->assertDontSee('dashboard-toolbar');
         }
