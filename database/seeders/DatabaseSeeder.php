@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Models\WorkspaceItem;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 
 class DatabaseSeeder extends Seeder
@@ -21,12 +22,29 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // Production deployments omit Faker and other development dependencies.
-        // Seed application reference data without creating demo login accounts.
         foreach (UserRole::cases() as $role) {
             Role::firstOrCreate(
                 ['code' => $role->value],
                 ['name' => $role->label(), 'description' => $role->label().' portal access role.'],
             );
+        }
+
+        $demoPassword = env('DEMO_USER_PASSWORD', 'Test#12345');
+        foreach ([
+            ['name' => 'Ubaid Landlord', 'email' => 'ubaid+landlord@gmail.com', 'role' => UserRole::LANDLORD],
+            ['name' => 'Ubaid Employee', 'email' => 'ubaid+employee@gmail.com', 'role' => UserRole::EMPLOYEE],
+        ] as $account) {
+            $user = User::updateOrCreate(
+                ['email' => $account['email']],
+                [
+                    'name' => $account['name'],
+                    'role' => $account['role'],
+                    'role_id' => Role::where('code', $account['role']->value)->value('id'),
+                    'password' => Hash::make($demoPassword),
+                    'email_verified_at' => now(),
+                ],
+            );
+            $user->profile()->firstOrCreate([], ['preferred_locale' => 'en']);
         }
 
         $landlords = User::query()->where('role', UserRole::LANDLORD)->get();

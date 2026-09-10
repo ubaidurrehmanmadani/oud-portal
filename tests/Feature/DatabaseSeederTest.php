@@ -25,17 +25,19 @@ class DatabaseSeederTest extends TestCase
         $this->artisan('db:seed', ['--class' => DatabaseSeeder::class, '--force' => true])->assertSuccessful();
         $this->artisan('db:seed', ['--class' => DatabaseSeeder::class, '--force' => true])->assertSuccessful();
 
-        $this->assertDatabaseCount('users', 1);
+        $this->assertDatabaseCount('users', 3);
         $this->assertSame($original, $user->fresh()->getAttributes());
         $this->assertDatabaseCount('roles', count(UserRole::cases()));
+        $this->assertDatabaseHas('users', ['email' => 'ubaid+landlord@gmail.com', 'role' => UserRole::LANDLORD->value]);
+        $this->assertDatabaseHas('users', ['email' => 'ubaid+employee@gmail.com', 'role' => UserRole::EMPLOYEE->value]);
         $this->assertSame('Customized employee role', $role->fresh()->name);
     }
 
-    public function test_seeding_does_not_create_demo_accounts(): void
+    public function test_seeding_creates_the_demo_accounts(): void
     {
         $this->artisan('db:seed', ['--class' => DatabaseSeeder::class, '--force' => true])->assertSuccessful();
 
-        $this->assertDatabaseCount('users', 0);
+        $this->assertDatabaseCount('users', 2);
         $this->assertDatabaseCount('roles', count(UserRole::cases()));
     }
 

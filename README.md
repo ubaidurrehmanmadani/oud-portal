@@ -79,7 +79,7 @@ The Laravel framework is open-sourced software licensed under the [MIT license](
 
 ## Production database seeding
 
-`php artisan db:seed --force` seeds the application roles without Faker or user factories. It can be rerun without changing existing accounts or customized role records. It does not create the starter `test@example.com` account.
+`php artisan db:seed --force` seeds application roles, the demo landlord and employee accounts, and the reference landlord workspace data without Faker or user factories. It is idempotent and can be rerun safely. Set `DEMO_USER_PASSWORD` in Laravel Cloud to override the demo password.
 
 If Laravel Cloud reports `Call to undefined function Database\Factories\fake()`, deploy the updated `database/seeders/DatabaseSeeder.php`, then rerun the command in the **production** environment:
 
@@ -87,4 +87,4 @@ If Laravel Cloud reports `Call to undefined function Database\Factories\fake()`,
 php artisan db:seed --force
 ```
 
-This is a production seeder dependency fix, not a database connection or plus-addressing issue. Local `.env` settings should not be copied into Laravel Cloud. Verification was performed against an isolated in-memory database with Faker unavailable; production still requires deployment and a successful command run.
+The demo credentials are `ubaid+landlord@gmail.com` and `ubaid+employee@gmail.com`, both using the seeded demo password. Local `.env` settings should not be copied into Laravel Cloud. Verification was performed against an isolated in-memory database with Faker unavailable; production still requires deployment and a successful command run.
