@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Aboreto&family=Noto+Sans+Arabic:wght@400;500;600;700;800&family=Poppins:wght@400;500;600;700;800&display=swap">
     <link rel="stylesheet" href="{{ asset('oud/styles.css') }}">
     <link rel="stylesheet" href="{{ asset('oud/application.css') }}">
+    <script src="{{ asset('oud/application.js') }}" defer></script>
 </head>
 <body>
 <div class="portal {{ $isLandlord ? 'landlord-portal' : '' }}">
@@ -35,12 +36,22 @@
             <div class="topbar-title"><span>{{ __('portal.brand_eyebrow') }}</span><strong>{{ $title }}</strong></div>
             <div class="topbar-actions">
                 @include('partials.language-switcher')
+                @if ($isLandlord && request()->routeIs('dashboard.landlord') && $properties->isNotEmpty())
+                    <form method="GET" class="property-switcher">
+                        <label for="property-select">{{ __('workspace.property') }}</label>
+                        <select id="property-select" name="property" onchange="this.form.submit()">
+                            @foreach ($properties as $property)
+                                <option value="{{ $property->id }}" @selected($selectedProperty?->id === $property->id)>{{ $property->name }}</option>
+                            @endforeach
+                        </select>
+                    </form>
+                @endif
                 <div class="portal-profile"><strong>{{ auth()->user()->name }}</strong><span>{{ auth()->user()->role->label() }}</span></div>
                 <form method="POST" action="{{ route('logout') }}">@csrf<button class="button button-secondary">{{ __('portal.logout') }}</button></form>
             </div>
         </header>
         <section class="content {{ $isLandlord ? 'landlord-content' : '' }}">
-            @if ($isLandlord && $properties->isNotEmpty() && !request()->routeIs('workspace.*'))
+            @if ($isLandlord && $properties->isNotEmpty() && !request()->routeIs('workspace.*') && !request()->routeIs('dashboard.landlord'))
                 <form method="GET" class="workspace-filters">
                     <label for="property">{{ __('workspace.property') }}</label>
                     <select id="property" name="property">@unless(request()->routeIs('dashboard.landlord'))<option value="">{{ __('workspace.all_properties') }}</option>@endunless

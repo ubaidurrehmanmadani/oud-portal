@@ -76,3 +76,15 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 ## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+## Production database seeding
+
+`php artisan db:seed --force` seeds the application roles without Faker or user factories. It can be rerun without changing existing accounts or customized role records. It does not create the starter `test@example.com` account.
+
+If Laravel Cloud reports `Call to undefined function Database\Factories\fake()`, deploy the updated `database/seeders/DatabaseSeeder.php`, then rerun the command in the **production** environment:
+
+```bash
+php artisan db:seed --force
+```
+
+This is a production seeder dependency fix, not a database connection or plus-addressing issue. Local `.env` settings should not be copied into Laravel Cloud. Verification was performed against an isolated in-memory database with Faker unavailable; production still requires deployment and a successful command run.

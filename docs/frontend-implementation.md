@@ -105,3 +105,7 @@ The source requests Optima/Poppins and Swissra typography, but does not include 
 Headless Chrome screenshots use isolated test records, not production data. Desktop authentication/staff, Arabic landlord, and mobile views were reviewed. All 19 rendered pages passed a 390-pixel viewport check with document width equal to viewport width; navigation and wide document tables scroll within their own containers. The local MySQL migration was executed successfully without replacing the existing database.
 
 Final checks: changed PHP formatted with Laravel Pint; Blade templates compiled successfully; `git diff --check` passed; `oud:sync-design-assets` ran successfully. The supplied `OUD_project/` files have no unstaged changes from this implementation.
+
+## Production seeding correction
+
+The Laravel Cloud production screenshot showed `Database\Factories\fake()` unavailable during `db:seed --force`. The default seeder used a user factory that depended on development-only Faker. The seeder now inserts missing application roles directly and creates no demo accounts. Existing accounts and customized roles remain unchanged on reruns. The fix was checked locally with Faker excluded from autoloading and an isolated SQLite database; it has not been deployed or verified against production. Local `.env` was unchanged. After deployment, rerun `php artisan db:seed --force` in Laravel Cloud production.

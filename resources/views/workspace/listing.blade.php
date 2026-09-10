@@ -7,14 +7,14 @@
     @if ($section === 'approvals')<select name="status" aria-label="{{ __('workspace.status') }}"><option value="">{{ __('workspace.all_statuses') }}</option>@foreach (['pending', 'approved', 'rejected'] as $status)<option value="{{ $status }}" @selected(request('status') === $status)>{{ __('workspace.'.$status) }}</option>@endforeach</select>@endif
     <button class="button button-primary">{{ __('workspace.search') }}</button>
 </form>
-@if ($section === 'documents' && !$isLandlord)
+@if ($section === 'documents')
 <section class="module-grid document-table"><div class="document-table-head"><span>{{ __('workspace.title') }}</span><span>{{ __('workspace.category') }}</span><span>{{ __('workspace.updated') }}</span><span>{{ __('workspace.action') }}</span></div>
     @forelse ($items as $record)<article class="card module-card"><span class="card-kicker">{{ $record->category }}</span><h3>{{ $record->title }}</h3><p class="document-description">{{ $record->body }}</p><p class="muted">{{ strtoupper(pathinfo($record->file_name ?? '', PATHINFO_EXTENSION)) }} · {{ $record->updated_at->format('d M Y') }}</p><a href="{{ route($record->file_path ? 'workspace.download' : 'workspace.show', $record) }}">{{ __('workspace.'.($record->file_path ? 'download' : 'view')) }}</a></article>@empty<p class="empty-state">{{ __('workspace.empty') }}</p>@endforelse
 </section>
 @elseif ($section === 'training' || $section === 'search')
 <section class="module-grid">
     @forelse ($items as $record)<article class="card module-card">
-        @if ($record->kind === 'training')<img class="training-thumbnail" src="{{ asset('oud/assets/training-thumbnail.png') }}" alt="">@endif
+        @if ($record->kind === 'training')<button type="button" class="training-video-card" data-training-video="{{ $record->id }}"><img class="training-thumbnail" src="{{ asset('oud/assets/training-thumbnail.png') }}" alt=""><span class="training-play" aria-hidden="true">Play</span></button>@endif
         <span class="card-kicker">{{ $record->category ?? __('workspace.'.$record->kind) }}</span><h3>{{ $record->title }}</h3><p class="muted">{{ \Illuminate\Support\Str::limit($record->body, 160) }}</p><a href="{{ route('workspace.show', $record) }}">{{ __('workspace.open') }} →</a>
     </article>@empty<p class="card empty-state">{{ __('workspace.empty') }}</p>@endforelse
 </section>
@@ -24,7 +24,7 @@
 </div></section>
 @else
 <section class="card {{ $section === 'approvals' ? 'approval-list' : 'report-list' }}">
-    @forelse ($items as $record)<a href="{{ route('workspace.show', $record) }}"><span><strong>{{ $record->title }}</strong><small>{{ $record->property?->name }} · {{ $record->period ?? $record->updated_at->format('d M Y') }} · {{ __('workspace.'.$record->status) }}</small></span><b class="row-action">{{ __('workspace.'.($section === 'approvals' ? 'review' : 'view')) }}</b></a>@empty<p class="empty-state">{{ __('workspace.empty') }}</p>@endforelse
+    @forelse ($items as $record)<div class="workspace-row"><a href="{{ route('workspace.show', $record) }}"><span><strong>{{ $record->title }}</strong><small>{{ $record->property?->name }} · {{ $record->period ?? $record->updated_at->format('d M Y') }} · {{ __('workspace.'.$record->status) }}</small></span><b class="row-action">{{ __('workspace.'.($section === 'approvals' ? 'review' : 'view')) }}</b></a>@if ($section === 'approvals' && $record->status === 'pending')<form method="POST" action="{{ route('workspace.decide', $record) }}" class="inline-decision">@csrf<button class="button button-primary" name="decision" value="approved">{{ __('workspace.approve') }}</button><button class="button button-secondary" name="decision" value="rejected">{{ __('workspace.reject') }}</button></form>@endif</div>@empty<p class="empty-state">{{ __('workspace.empty') }}</p>@endforelse
 </section>
 @endif
 {{ $items->links('pagination.oud') }}

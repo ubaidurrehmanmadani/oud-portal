@@ -28,6 +28,7 @@ class WorkspaceController extends Controller
             }),
             'counts' => $counts,
             'latestReport' => (clone $query)->where('kind', 'report')->where('status', 'published')->latest('published_at')->latest('id')->first(),
+            'reportHistory' => (clone $query)->where('kind', 'report')->where('status', 'published')->whereNotNull('occupancy')->latest('published_at')->latest('id')->limit(12)->get()->sortBy('published_at')->values(),
             'pendingApprovals' => (clone $query)->where('kind', 'approval')->where('status', 'pending')->count(),
             'recent' => (clone $query)->latest()->limit(6)->get(),
         ]);

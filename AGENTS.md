@@ -13,3 +13,7 @@
 - Frontend work includes the necessary routes, controllers, database integration, and role/assignment checks, as explicitly requested by the project owner.
 - Keep `docs/frontend-implementation.md` current with screen mappings, migrations, verification, and material limitations.
 - `public/oud/styles.css` and `public/oud/assets/` are synchronized reference assets. Keep application adaptations in `public/oud/application.css` and Blade views; do not import prototype authentication or sample-data JavaScript.
+
+## Environment distinction
+
+- Laravel Cloud screenshots may describe production failures. Inspect local source to prepare fixes, but never describe local checks as production verification. Keep local `.env` settings separate from Cloud environment variables.
