@@ -85,6 +85,7 @@ class WorkspaceTest extends TestCase
         $document = WorkspaceItem::where('title', 'OUD Reserve lease register')->firstOrFail();
 
         $this->actingAs($owner)->get(route('workspace.show', $report))->assertOk()->assertSee($report->title);
+        $this->get(route('workspace.download', $report))->assertDownload($report->file_name);
         $this->get(route('workspace.show', $approval))->assertOk()->assertSee($approval->title);
         $this->get(route('workspace.download', $document))->assertDownload($document->file_name);
     }

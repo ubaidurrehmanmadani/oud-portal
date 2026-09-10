@@ -74,9 +74,12 @@ class DatabaseSeeder extends Seeder
             ['title' => 'Development update', 'property_id' => $dunes->id, 'period' => 'August 2026', 'body' => 'Development milestones and upcoming delivery activities.'],
         ];
         foreach ($reports as $index => $report) {
+            $fileName = strtolower(str_replace(' ', '-', $report['title'])).'.pdf';
+            $filePath = 'workspace/demo/'.$fileName;
+            Storage::disk('local')->put($filePath, 'OUD demo report: '.$report['title']);
             WorkspaceItem::updateOrCreate(
                 ['kind' => 'report', 'title' => $report['title'], 'property_id' => $report['property_id']],
-                $report + ['audience' => 'landlord', 'status' => 'published', 'published_at' => now()->subDays($index + 1)],
+                $report + ['audience' => 'landlord', 'status' => 'published', 'published_at' => now()->subDays($index + 1), 'file_path' => $filePath, 'file_name' => $fileName],
             );
         }
 
