@@ -8,10 +8,12 @@ use App\Models\Property;
 use App\Models\Role;
 use App\Models\User;
 use App\Models\WorkspaceItem;
+use App\Support\FinancialReport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class ContentController extends Controller
 {
@@ -82,6 +84,9 @@ class ContentController extends Controller
             'file' => 'nullable|file|max:51200|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx,jpg,jpeg,png,mp4,zip,txt',
         ]);
         unset($data['file']);
+        if ($kind === 'report') {
+            $data = array_merge($data, $this->financialData($request, $record));
+        }
         if (! $isAdmin) {
             $data['department_id'] = $request->user()->department_id;
             $data['property_id'] = null;
@@ -146,6 +151,47 @@ class ContentController extends Controller
                 }
             });
         }
+    }
+
+    private function financialData(Request $request, WorkspaceItem $record): array
+    {
+        if (preg_match('/^\d{4}-\d{2}$/', $request->input('report_month', '') ?? '')) {
+            $request->merge(['report_month' => $request->input('report_month').'-01']);
+        }
+        $rules = [
+            'report_month' => ['nullable', 'date_format:Y-m-d', 'regex:/^(19|20|21)\d{2}-(0[1-9]|1[0-2])-01$/', 'before:2101-01-01', Rule::unique('workspace_items')->where('property_id', $request->input('property_id'))->ignore($record->id)],
+            'financial_data' => 'nullable|array:'.implode(',', [...FinancialReport::FIELDS, 'components', 'source_name', 'source_notes', 'monthly_rows', 'annual_rows']),
+            'financial_data.components' => 'nullable|array:'.implode(',', FinancialReport::COMPONENTS),
+            'financial_data.source_name' => 'nullable|string|max:255',
+            'financial_data.source_notes' => 'nullable|string|max:10000',
+        ];
+        foreach (FinancialReport::FIELDS as $field) {
+            $rules['financial_data.'.$field] = str_ends_with($field, '_occupancy') ? 'nullable|numeric|between:0,100' : 'nullable|numeric|between:0,99999999999999';
+        }
+        foreach (FinancialReport::COMPONENTS as $component) {
+            $rules['financial_data.components.'.$component] = 'nullable|array:'.implode(',', FinancialReport::COMPONENT_FIELDS);
+            foreach (FinancialReport::COMPONENT_FIELDS as $field) {
+                $rules['financial_data.components.'.$component.'.'.$field] = 'nullable|numeric|between:0,99999999999999';
+            }
+        }
+        foreach (['monthly_rows', 'annual_rows'] as $table) {
+            $rules['financial_data.'.$table] = 'nullable|array|max:100';
+            $rules['financial_data.'.$table.'.*'] = 'array:label,reference,values';
+            $rules['financial_data.'.$table.'.*.label'] = 'nullable|string|max:255';
+            $rules['financial_data.'.$table.'.*.reference'] = 'nullable|string|max:100';
+            $rules['financial_data.'.$table.'.*.values'] = 'nullable|array|max:6';
+            $rules['financial_data.'.$table.'.*.values.*'] = 'nullable|string|max:100';
+        }
+        $data = $request->validate($rules);
+        $prune = function (array $values) use (&$prune): array {
+            return array_filter(array_map(fn ($value) => is_array($value) ? $prune($value) : $value, $values), fn ($value) => $value !== null && $value !== '' && $value !== []);
+        };
+        $financial = $prune($data['financial_data'] ?? []);
+        if ($financial && empty($data['report_month'])) {
+            throw ValidationException::withMessages(['report_month' => __('financial.month_required')]);
+        }
+
+        return ['report_month' => $data['report_month'] ?? null, 'financial_data' => $financial ?: null];
     }
 
     private function editable(Request $request, int $item): WorkspaceItem

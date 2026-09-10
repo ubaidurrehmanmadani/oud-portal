@@ -36,6 +36,7 @@
         @if ($kind === 'report')
             <div class="field"><label for="period">{{ __('workspace.period') }}</label><input id="period" name="period" value="{{ old('period', $record->period ?? '') }}"></div>
             @foreach (['occupancy', 'net_revenue', 'leased_area'] as $metric)<div class="field"><label for="{{ $metric }}">{{ __('workspace.'.$metric) }}</label><input id="{{ $metric }}" name="{{ $metric }}" type="number" min="0" step="0.01" @if ($metric === 'occupancy') max="100" @endif value="{{ old($metric, $record->$metric ?? '') }}"></div>@endforeach
+            @include('content.financial-fields')
         @endif
         @if ($kind === 'approval')<div class="field"><label for="amount">{{ __('workspace.amount') }} (SAR)</label><input id="amount" name="amount" type="number" min="0" step="0.01" value="{{ old('amount', $record->amount ?? '') }}"></div>@endif
     @endif
