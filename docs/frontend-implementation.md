@@ -113,3 +113,9 @@ Final checks: changed PHP formatted with Laravel Pint; Blade templates compiled 
 ## Production seeding correction
 
 The Laravel Cloud production screenshot showed `Database\Factories\fake()` unavailable during `db:seed --force`. The default seeder used a user factory that depended on development-only Faker. The seeder now inserts missing application roles directly and creates no demo accounts. Existing accounts and customized roles remain unchanged on reruns. The fix was checked locally with Faker excluded from autoloading and an isolated SQLite database; it has not been deployed or verified against production. Local `.env` was unchanged. After deployment, rerun `php artisan db:seed --force` in Laravel Cloud production.
+
+### PHP 8.2 / Laravel 12 compatibility (2026-09-10)
+
+Authentication models use `$fillable` and `$hidden` properties in place of unsupported Eloquent attributes after the Laravel downgrade. This restores registration, role/profile/login-event creation, and password/token hiding during serialization. No migration or `.env` change is required. Clear compiled views and configuration after downgrading (`php artisan view:clear` and `php artisan config:clear`) to remove stale exception templates.
+
+Local verification uses `/usr/local/opt/php@8.2/bin/php` (8.2.29); the default `php` command currently runs 8.4.8. Authentication and workspace tests use an isolated SQLite database, not the local MySQL database or production. The browser server at port 8000 was unavailable during verification.

@@ -15,6 +15,14 @@ class AuthenticationTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_user_serialization_hides_authentication_secrets(): void
+    {
+        $user = User::factory()->make(['remember_token' => 'private-token']);
+
+        $this->assertArrayNotHasKey('password', $user->toArray());
+        $this->assertArrayNotHasKey('remember_token', $user->toArray());
+    }
+
     public function test_authentication_screens_can_be_rendered(): void
     {
         $this->get('/login')->assertOk()->assertSee('Login to your account');
