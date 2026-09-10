@@ -88,3 +88,14 @@ php artisan db:seed --force
 ```
 
 The demo credentials are `ubaid+landlord@gmail.com` and `ubaid+employee@gmail.com`, both using the seeded demo password. Local `.env` settings should not be copied into Laravel Cloud. Verification was performed against an isolated in-memory database with Faker unavailable; production still requires deployment and a successful command run.
+
+## Laravel Cloud deployment commands
+
+In the Laravel Cloud environment, open **Settings > Deployments > Deploy commands** and set:
+
+```bash
+php artisan migrate --force
+php artisan db:seed --force
+```
+
+These commands run automatically before each deployment goes live. Run `php artisan optimize:clear` manually from the Cloud **Commands** tab when changing environment variables or troubleshooting stale configuration; it should not be part of every deploy because Cloud recommends preserving the deployment cache during releases.
