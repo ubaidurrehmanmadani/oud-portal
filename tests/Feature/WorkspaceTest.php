@@ -7,6 +7,7 @@ use App\Models\Department;
 use App\Models\Property;
 use App\Models\User;
 use App\Models\WorkspaceItem;
+use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -61,6 +62,31 @@ class WorkspaceTest extends TestCase
                 }
             }
         }
+    }
+
+    public function test_seeded_landlord_can_open_every_reference_screen(): void
+    {
+        Storage::fake('local');
+        $owner = User::factory()->create(['role' => UserRole::LANDLORD]);
+        $this->artisan('db:seed', ['--class' => DatabaseSeeder::class, '--force' => true])->assertSuccessful();
+
+        foreach ([
+            ['dashboard.landlord', []],
+            ['landlord.index', ['section' => 'properties']],
+            ['landlord.index', ['section' => 'reports']],
+            ['landlord.index', ['section' => 'documents']],
+            ['landlord.index', ['section' => 'approvals']],
+        ] as [$routeName, $parameters]) {
+            $this->actingAs($owner)->get(route($routeName, $parameters))->assertOk();
+        }
+
+        $report = WorkspaceItem::where('title', 'Monthly performance report')->firstOrFail();
+        $approval = WorkspaceItem::where('title', 'Lobby maintenance budget')->firstOrFail();
+        $document = WorkspaceItem::where('title', 'OUD Reserve lease register')->firstOrFail();
+
+        $this->actingAs($owner)->get(route('workspace.show', $report))->assertOk()->assertSee($report->title);
+        $this->get(route('workspace.show', $approval))->assertOk()->assertSee($approval->title);
+        $this->get(route('workspace.download', $document))->assertDownload($document->file_name);
     }
 
     public function test_guests_and_wrong_roles_cannot_access_workspace_routes(): void
