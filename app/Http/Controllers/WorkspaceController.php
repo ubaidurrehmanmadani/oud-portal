@@ -3,10 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Enums\UserRole;
+use App\Models\Property;
 use App\Models\WorkspaceItem;
 use App\Support\FinancialReport;
-use Illuminate\Support\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
@@ -36,8 +37,8 @@ class WorkspaceController extends Controller
             'title' => $expected === UserRole::LANDLORD && $request->routeIs('dashboard.landlord')
                 ? 'Property dashboard'
                 : __('portal.'.match ($expected) {
-                UserRole::ADMIN => 'admin_dashboard', UserRole::DEPARTMENT_MANAGER => 'manager_dashboard', UserRole::EMPLOYEE => 'employee_dashboard', UserRole::LANDLORD => 'landlord_dashboard'
-            }),
+                    UserRole::ADMIN => 'admin_dashboard', UserRole::DEPARTMENT_MANAGER => 'manager_dashboard', UserRole::EMPLOYEE => 'employee_dashboard', UserRole::LANDLORD => 'landlord_dashboard'
+                }),
             'counts' => $counts,
             'latestReport' => (clone $query)->where('kind', 'report')->where('status', 'published')->latest('published_at')->latest('id')->first(),
             'reportHistory' => Schema::hasColumn('workspace_items', 'occupancy')
@@ -89,8 +90,8 @@ class WorkspaceController extends Controller
     {
         $record = WorkspaceItem::visibleTo($request->user())->with(['property', 'department'])->findOrFail($item);
 
-        if ($record->kind === 'report' && $record->report_month && $request->user()->role === UserRole::LANDLORD) {
-            return redirect()->route('landlord.financials', ['property' => $record->property_id, 'year' => $record->report_month->year, 'month' => $record->report_month->month]);
+        if ($record->kind === 'report' && $record->report_month && in_array($request->user()->role, [UserRole::LANDLORD, UserRole::ADMIN], true)) {
+            return redirect()->route($request->user()->role === UserRole::ADMIN ? 'admin.financials' : 'landlord.financials', ['property' => $record->property_id, 'year' => $record->report_month->year, 'month' => $record->report_month->month]);
         }
 
         return view('workspace.detail', $this->context($request) + ['title' => $record->title, 'item' => $record]);
@@ -107,10 +108,14 @@ class WorkspaceController extends Controller
     public function financials(Request $request, int $property)
     {
         $data = $this->context($request);
+        $isAdmin = $request->user()->role === UserRole::ADMIN;
+        if ($isAdmin) {
+            $data['properties'] = Property::orderBy('name')->get();
+        }
         $selectedProperty = $data['properties']->firstWhere('id', $property);
         abort_unless($selectedProperty, 404);
         $request->validate(['year' => 'nullable|integer|between:1900,2100', 'month' => 'nullable|integer|between:1,12']);
-        $query = WorkspaceItem::visibleTo($request->user())->where('kind', 'report')->where('status', 'published')
+        $query = WorkspaceItem::visibleTo($request->user())->where('kind', 'report')->when(! $isAdmin, fn ($query) => $query->where('status', 'published'))
             ->where('property_id', $property)->whereNotNull('report_month');
         $latest = (clone $query)->orderByDesc('report_month')->first();
         $year = (int) $request->input('year', $latest?->report_month->year ?? now()->year);
@@ -122,6 +127,7 @@ class WorkspaceController extends Controller
 
         return view('workspace.financial-report', array_replace($data, compact('selectedProperty', 'year', 'month', 'history', 'report', 'years')) + [
             'title' => $selectedProperty->name.' · '.__('financial.title'), 'section' => 'reports', 'isFinancialReport' => true,
+            'financialRoute' => $isAdmin ? 'admin.financials' : 'landlord.financials',
         ]);
     }
 

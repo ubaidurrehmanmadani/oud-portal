@@ -66,4 +66,15 @@ class FinancialReport
     {
         return $value === null ? '—' : number_format($value, 2).$suffix;
     }
+
+    public static function axisLabel(float $value): string
+    {
+        foreach ([1000000000000 => 'T', 1000000000 => 'B', 1000000 => 'M', 1000 => 'K'] as $divisor => $suffix) {
+            if ($value >= $divisor) {
+                return number_format($value / $divisor, 1).$suffix;
+            }
+        }
+
+        return number_format($value, $value > 0 && $value < 1 ? 2 : 0);
+    }
 }

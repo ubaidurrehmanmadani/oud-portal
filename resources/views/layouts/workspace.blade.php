@@ -6,8 +6,8 @@
     <title>{{ $title }} | OUD Compass</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Aboreto&family=Noto+Sans+Arabic:wght@400;500;600;700;800&family=Poppins:wght@400;500;600;700;800&display=swap">
     <link rel="stylesheet" href="{{ asset('oud/styles.css') }}">
-    <link rel="stylesheet" href="{{ asset('oud/excel-reporting.css') }}">
-    <link rel="stylesheet" href="{{ asset('oud/report-sidebar.css') }}">
+    <link rel="stylesheet" href="{{ asset('oud/excel-reporting.css') }}" data-report-style media="{{ ($isFinancialReport ?? false) ? 'all' : 'not all' }}">
+    <link rel="stylesheet" href="{{ asset('oud/report-sidebar.css') }}" data-report-style media="{{ ($isFinancialReport ?? false) ? 'all' : 'not all' }}">
     <link rel="stylesheet" href="{{ asset('oud/user-role-button.css') }}">
     <link rel="stylesheet" href="{{ asset('oud/user-role-popup.css') }}">
     <link rel="stylesheet" href="{{ asset('oud/application.css') }}">
@@ -17,7 +17,7 @@
 <div class="portal {{ $isLandlord ? 'landlord-portal' : '' }}">
     <aside class="sidebar">
         <div class="sidebar-brand"><a href="{{ route(auth()->user()->dashboardRouteName()) }}"><img src="{{ asset('oud/assets/oud-logo.png') }}" alt="OUD Real Estate"></a></div>
-        <div><p class="nav-label">{{ $isLandlord ? __('financial.property_reports') : __('workspace.workspace') }}</p>
+        <div><p class="nav-label">{{ $isLandlord ? __('financial.workspace') : __('workspace.workspace') }}</p>
             <nav class="nav" aria-label="{{ $isLandlord ? __('financial.property_reports') : __('workspace.workspace') }}">
                 <a class="{{ request()->routeIs('dashboard.*') ? 'active' : '' }}" href="{{ route(auth()->user()->dashboardRouteName()) }}">{{ __('workspace.dashboard') }}</a>
                 @if ($isLandlord && $properties->isNotEmpty())

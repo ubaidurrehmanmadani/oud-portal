@@ -29,13 +29,14 @@ No separate admin or department manager designs are supplied. These roles use th
 | `user_training.html` | `/staff/training` | `workspace/training.blade.php` |
 | `user_announcements.html` | `/staff/announcements` | `workspace/announcements.blade.php` |
 | `user_search.html` | `/staff/search?q=...` | `workspace/search.blade.php` |
-| `landlord_dashboard.html` | `/dashboard/landlord?property={id}` | `workspace/dashboard.blade.php` |
+| `landlord_dashboard.html` | `/dashboard/landlord` | `workspace/landlord-dashboard.blade.php` |
 | `landlord_properties.html` | `/landlord/properties` | `workspace/properties.blade.php` |
 | `landlord_reports.html` | `/landlord/reports` | `workspace/reports.blade.php` |
 | `landlord_documents.html` | `/landlord/documents` | `workspace/documents.blade.php` |
 | `landlord_approvals.html` | `/landlord/approvals` | `workspace/approvals.blade.php` |
 | `landlord_report_detail.html` | `/workspace/items/{id}` for a report | `workspace/detail.blade.php` |
 | `landlord_approval_detail.html` | `/workspace/items/{id}` for an approval | `workspace/detail.blade.php` |
+| `excel_report_{reserve,square,dunes,east,west}_{01..12}{,_ar}.html` | `/landlord/properties/{id}/financials?year=2027&month=1` | `workspace/financial-report.blade.php` and shared chart/table partials |
 
 The shared shell is `resources/views/layouts/workspace.blade.php`. Staff and landlord lists share `workspace/listing.blade.php`. Existing admin URLs and explicit core create-page views remain available. Admin module list pages support database search and pagination.
 
@@ -79,7 +80,7 @@ To populate an existing installation, use an admin account to create departments
 
 ## Design assets and future updates
 
-`public/oud/styles.css` is copied from the supplied CSS. Reference imagery is copied to `public/oud/assets/`. Laravel-specific compatibility, responsive fixes, and font fallbacks live in `public/oud/application.css`. `public/oud/password-eye.js` supplies accessible localized password visibility controls. English and Arabic workspace labels live in `lang/en/workspace.php` and `lang/ar/workspace.php`.
+All five reference stylesheets (`styles.css`, `excel-reporting.css`, `report-sidebar.css`, `user-role-button.css`, `user-role-popup.css`) are synchronized into `public/oud/`. Reference imagery is copied to `public/oud/assets/`. Financial report styles are enabled only on financial pages, including when using progressive navigation. Laravel-specific compatibility, responsive fixes, and font fallbacks live in `public/oud/application.css`. `public/oud/password-eye.js` supplies accessible localized password visibility controls. English and Arabic labels live in the `workspace.php`, `financial.php` and `role-guide.php` translation files.
 
 Landlord list screens use one shared action convention: row content expands on the left and every action stays in a right-side cluster. View and Review use the dark primary pill, Download uses the outlined neutral variant, and Approve uses the olive success variant. This applies consistently to Properties, Reports, Documents, and Approvals and remains responsive by moving the action cluster below the row content on narrow screens.
 
@@ -97,12 +98,14 @@ The source requests Optima/Poppins and Swissra typography, but does not include 
 
 ## Deliberate limits
 
-- The reference's invented KPI values and decorative trend chart are not treated as business data. The dashboard displays the latest published report's metrics and a real occupancy meter; missing figures display an empty state. Exact figures remain on report details; large dashboard revenue figures are abbreviated.
+- The updated landlord dashboard shows summaries for assigned properties and links to monthly financial reports. Charts use saved, visible monthly records; missing figures remain unavailable rather than becoming invented values. Older reports retain their existing detail pages and downloadable attachments.
 - Notification delivery and external/Odoo synchronization were not configured in the existing application. Their admin pages now show an unconfigured state instead of sample activity. No external integration or notification delivery is claimed.
 - Runtime settings remain deployment/environment configuration; the settings screen shows actual non-secret values. Permissions display the stored roles/permissions, while application role and assignment checks govern the implemented workflow. Former placeholder setup URLs for these modules lead to their status pages.
 - This is an integration of supplied frontend screens and their core workflows, not an implementation of unspecified external services, custom permission overrides, property photo management, or historical KPI ingestion.
 
 ## Verification
+
+See the September reference-refresh verification below for the latest checks. The following records the original integration baseline.
 
 `php artisan test`: 25 tests and 440 assertions passing after the final changes. Tests cover authentication, EN/AR rendering, all dashboard role combinations, staff/landlord routes, cross-department/property isolation, private downloads, upload persistence, management forms, assignments, invalid input, registration privilege restrictions, and repeated approval decisions.
 
@@ -119,3 +122,45 @@ The Laravel Cloud production screenshot showed `Database\Factories\fake()` unava
 Authentication models use `$fillable` and `$hidden` properties in place of unsupported Eloquent attributes after the Laravel downgrade. This restores registration, role/profile/login-event creation, and password/token hiding during serialization. No migration or `.env` change is required. Clear compiled views and configuration after downgrading (`php artisan view:clear` and `php artisan config:clear`) to remove stale exception templates.
 
 Local verification uses `/usr/local/opt/php@8.2/bin/php` (8.2.29); the default `php` command currently runs 8.4.8. Authentication and workspace tests use an isolated SQLite database, not the local MySQL database or production. The browser server at port 8000 was unavailable during verification.
+
+## September 2026 reference refresh
+
+### Complete reference inventory and mapping
+
+Reviewed the updated inventory: **136 HTML pages, 17 JavaScript files, five stylesheets and 16 images**. The original 16 pages remain mapped above. The 120 additions are five property variants × twelve months × English/Arabic. All 120 are implemented by one parameterized report view, allowing any assigned property and saved year rather than hard-coding five names or 2027. Reserve/Square/East contain the commercial component layout; Dunes/West omit unavailable retail figures and include source-total reconciliation. The integrated view supports all six optional components and reconciliation for every property.
+
+| Reference change | Integrated behavior |
+| --- | --- |
+| Landlord dashboard property pills, nested sidebar and two-column property summaries | Assigned-property navigation; latest published monthly totals, office/retail occupancy, collections, area and P&L |
+| Report property/month selectors and English/Arabic links | Authorized property URLs, twelve month links, saved-year selector and existing persisted locale switch |
+| Rental revenue, service charges, total revenue, collection rate | Calculated from saved component figures and collection amounts |
+| Annual revenue bars and occupancy lines | Twelve-month SVG charts with selected-month indicator, exact accessible tables, tooltips and gaps for missing data |
+| Collection and rental-mix donuts | Saved amounts and calculated percentages, with visible exact-value legends |
+| Component revenue, property facts, area, service-charge and rental-rate bars | Six optional components: office, mezzanine, lobby/corridors, terrace, retail and outdoor |
+| Detailed monthly source table and annual Summary worksheet | Editable source labels, cell references and six value columns, preserved separately from calculations |
+| Forecast, reconciliation and source notes | Office/retail forecasts, saved versus calculated total and difference, workbook name and notes |
+| Collapsible P&L example | Same disclosure, KPIs, revenue/expense chart, expense donut and monthly results, populated from saved real figures |
+| Role buttons/popups on all staff and landlord pages | Shared native dialog, role-specific EN/AR guidance, Escape/backdrop close and restored trigger focus; also available to admin/manager |
+| Supplied CSS, responsive rules, scrollbar and print treatment | Synchronized reference CSS with scoped application adaptations and printable expanded report details |
+
+The prototype hides its former landlord KPI/chart/recent-activity sections; the application now uses the replacement summary dashboard. Existing property, report, document and approval workflows remain available from the sidebar. The original staff/authentication HTML and supporting scripts retain their existing integrations; the new role dialog is supplied through the shared shell. No prototype script that replaces the document body, simulates authentication, inserts sample rows or overwrites real figures is imported.
+
+### Data entry, publication and access
+
+Migration `2026_09_10_180000_add_financial_reporting_to_workspace_items.php` adds nullable `report_month` and `financial_data` columns and a unique property/month index. Existing records and assignments are preserved. The migration was applied successfully to the **local XAMPP MySQL database**. Production must run `php artisan migrate --force` after deployment.
+
+Use **Manage content → Create report** to select a property/month, enter components, collections, occupancy, annual forecasts, source tables and optional P&L amounts, and attach the source file. A month is required when financial fields are populated. Blank values are missing; explicit zeros are retained. Duplicate property/month submissions are rejected; use the existing report's edit form. Generic reports without a month continue to work.
+
+Admins can preview monthly records, including drafts, at `/admin/properties/{id}/financials`; existing report View links route to this preview. Publish through the existing report status field. Only published, non-future records for assigned properties appear in landlord financial pages, charts, lists and downloads. Pending/approved/rejected statuses are visible to landlords only for approval requests, never as a way to expose an unpublished report. Direct routes and changed assignments are rechecked on every request.
+
+Reference workbook figures are labelled **preview / not published**, and its P&L examples explicitly contain invented data. Neither is inserted into application business records. No original `.xlsx` workbook was supplied in `OUD_project/`; automatic spreadsheet parsing is not implemented. The full visual/data structure is ready for entry of verified figures and source rows. Notifications, manager financial submission/review stages and custom permissions described in the prototype's proposal-based role guide are not silently added; the integrated role guide accurately describes the application's enforced capabilities.
+
+Calculations add supplied component rents and service charges once, and calculate collection rate only when rent due is positive. Missing monthly records do not become zero bars or connected occupancy segments. Source tables and annual summaries preserve entered values and references independently of charts, including discrepancies. Forecasts are not represented as net profit. P&L uses entered revenue and the three expense categories; the interface explains that incomplete categories produce incomplete totals.
+
+### Refresh verification
+
+- Local automated suite: **37 tests, 1,179 assertions passing**, using XAMPP PHP **8.2.4**, without the optional `intl` extension.
+- Coverage includes all 120 property/month/locale combinations, blank/zero figures, source escaping, duplicate-month writes and edits, draft preview, role/property isolation, future publication and revoked assignments, plus existing authentication/content/approval tests.
+- All five copied stylesheets and 16 copied images were verified byte-for-byte against the supplied reference folder.
+- Laravel Pint formatted changed PHP. JavaScript syntax and Blade compilation were checked. Browser verification uses a separate SQLite fixture database and localhost preview; these checks do not constitute production verification.
+- Headless Chrome verified desktop widths at 1,440px and mobile widths at 390px: dashboard, financial report, expanded details, Arabic desktop/mobile, role dialog and admin financial form. Document width equals viewport width in all eight layout checks. Reviewed screenshots after correcting RTL grid proportions; no JavaScript exceptions were recorded. Property/month navigation, browser Back, preserved sidebar DOM, language switching, role-dialog focus/Escape, and source-row add/remove controls passed.

@@ -136,7 +136,7 @@ class WorkspaceTest extends TestCase
         $this->get(route('workspace.show', $report))->assertOk()->assertSee('86.00');
         $this->get(route('workspace.show', $private))->assertNotFound();
         $this->get('/landlord/reports?property='.$other->id)->assertNotFound();
-        $this->get('/dashboard/landlord?property='.$property->id)->assertOk()->assertSee('86.00%');
+        $this->get('/dashboard/landlord?property='.$property->id)->assertOk()->assertSee('Property financial reports')->assertSee($report->title)->assertDontSee($private->title);
         $request = $this->item(['kind' => 'approval', 'audience' => 'landlord', 'property_id' => $property->id, 'status' => 'pending']);
         $this->get(route('workspace.show', $request))->assertOk();
         $this->post(route('workspace.decide', $request), ['decision' => 'approved', 'comment' => 'Proceed'])->assertRedirect()->assertSessionHasNoErrors();

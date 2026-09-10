@@ -1,8 +1,9 @@
 <?php
 
 return [
+    'duplicate_month' => 'A financial report already exists for this property and month. Edit the existing report.',
     'title' => 'Property financial reports', 'intro' => 'Choose a property to view its monthly figures and charts.',
-    'property_reports' => 'Property reports', 'monthly_intro' => 'Monthly income, collections and property performance.',
+    'property_reports' => 'Property reports', 'workspace' => 'Property workspace', 'monthly_intro' => 'Monthly income, collections and property performance.',
     'month' => 'Reporting month', 'year' => 'Year', 'month_required' => 'Choose a reporting month for the financial figures.',
     'monthly_help' => 'Select a month to create a monthly financial report. Leave figures blank when unavailable; enter zero only for a confirmed zero. Existing general reports can keep their free-text period.',
     'no_report' => 'No published financial report is available for this month.', 'no_figures' => 'Figures have not been supplied.',

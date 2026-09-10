@@ -2,6 +2,44 @@
     const shell = document.querySelector('[data-portal-shell]');
     const content = shell?.querySelector('[data-page-content]');
     const pageTitle = shell?.querySelector('[data-page-title]');
+    const roleDialog = document.querySelector('#oud-role-dialog');
+    let navigationController;
+    let printDetails = [];
+
+    window.addEventListener('beforeprint', () => {
+        printDetails = Array.from(document.querySelectorAll('.reporting details:not(.picker)')).filter(details => !details.open);
+        printDetails.forEach(details => details.open = true);
+    });
+    window.addEventListener('afterprint', () => {
+        printDetails.forEach(details => details.open = false);
+        printDetails = [];
+    });
+
+    document.addEventListener('click', (event) => {
+        if (event.target.closest('[data-role-open]')) roleDialog?.showModal();
+        if (event.target.closest('[data-role-close]')) roleDialog?.close();
+        if (event.target.closest('[data-print-report]')) window.print();
+        const addRow = event.target.closest('[data-add-source-row]');
+        if (addRow) {
+            const section = addRow.closest('[data-source-table]');
+            const rows = section.querySelector('tbody');
+            const nextIndex = Math.max(-1, ...Array.from(rows.querySelectorAll('input')).map((input) => Number(input.name.match(/\[(\d+)\]/)?.[1] ?? -1))) + 1;
+            if (rows.children.length >= 100) return;
+            rows.insertAdjacentHTML('beforeend', section.querySelector('template').innerHTML.replaceAll('__INDEX__', String(nextIndex)));
+            rows.lastElementChild.querySelector('input').focus();
+        }
+        const removeRow = event.target.closest('[data-remove-source-row]');
+        if (removeRow) {
+            const section = removeRow.closest('[data-source-table]');
+            removeRow.closest('tr').remove();
+            section.querySelector('[data-add-source-row]').focus();
+        }
+    });
+    roleDialog?.addEventListener('click', (event) => {
+        const bounds = roleDialog.getBoundingClientRect();
+        if (event.target === roleDialog && (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom)) roleDialog.close();
+    });
+    roleDialog?.addEventListener('close', () => document.querySelector('[data-role-open]')?.focus());
 
     const setupTrainingCards = () => {
         const cards = document.querySelectorAll('[data-training-video]');
@@ -42,7 +80,7 @@
     };
 
     const isInternalGet = (link) => {
-        if (!link || link.target || link.hasAttribute('download') || link.closest('form')) return false;
+        if (!link || !link.hasAttribute('href') || link.target || link.hasAttribute('download') || link.closest('form')) return false;
         const url = new URL(link.href, window.location.href);
         return url.origin === window.location.origin && url.protocol.startsWith('http') && link.pathname !== '/logout';
     };
@@ -51,35 +89,55 @@
         const next = new DOMParser().parseFromString(html, 'text/html');
         const nextContent = next.querySelector('[data-page-content]');
         if (!nextContent) return false;
+        if (next.documentElement.lang !== document.documentElement.lang || next.body.dataset.portalRole !== shell.dataset.portalRole) return false;
+        shell.classList.toggle('reporting', next.body.classList.contains('reporting'));
+        document.querySelectorAll('[data-report-style]').forEach((stylesheet) => stylesheet.media = next.body.classList.contains('reporting') ? 'all' : 'not all');
         content.className = nextContent.className;
         content.innerHTML = nextContent.innerHTML;
         if (pageTitle && next.querySelector('[data-page-title]')) pageTitle.textContent = next.querySelector('[data-page-title]').textContent;
-        shell.querySelectorAll('.nav a').forEach((item) => item.classList.toggle('active', new URL(item.href, window.location.href).pathname === url.pathname && (!url.search || item.href === url.href)));
+        const nextLinks = Array.from(next.querySelectorAll('.sidebar .nav a'));
+        shell.querySelectorAll('.sidebar .nav a').forEach((item) => {
+            const matching = nextLinks.find((candidate) => candidate.href === item.href);
+            item.classList.toggle('active', matching?.classList.contains('active') ?? false);
+            if (matching?.hasAttribute('aria-current')) item.setAttribute('aria-current', matching.getAttribute('aria-current'));
+            else item.removeAttribute('aria-current');
+        });
         document.title = next.title;
         setupTrainingCards();
         return true;
     };
 
     const navigate = async (url, pushState = true) => {
+        navigationController?.abort();
+        const controller = new AbortController();
+        navigationController = controller;
         shell.classList.add('is-navigating');
         try {
-            const response = await fetch(url.href, { headers: { 'X-Requested-With': 'XMLHttpRequest', Accept: 'text/html' } });
+            const response = await fetch(url.href, { signal: controller.signal, headers: { 'X-Requested-With': 'XMLHttpRequest', Accept: 'text/html' } });
             if (!response.ok || response.redirected && new URL(response.url).pathname === '/login') throw new Error('navigation-fallback');
+            if (!response.headers.get('content-type')?.includes('text/html')) throw new Error('navigation-fallback');
             const html = await response.text();
+            if (controller.signal.aborted) return;
             if (!updateShell(html, url)) throw new Error('navigation-fallback');
-            if (pushState) window.history.pushState({ portal: true }, '', url.href);
-        } catch {
+            const destination = new URL(response.url);
+            if (pushState) window.history.pushState({ portal: true }, '', destination.href);
+            else if (destination.href !== url.href) window.history.replaceState({ portal: true }, '', destination.href);
+            window.scrollTo({ top: 0, behavior: 'instant' });
+        } catch (error) {
+            if (error.name === 'AbortError') return;
             window.location.assign(url.href);
         } finally {
-            shell.classList.remove('is-navigating');
+            if (navigationController === controller) shell.classList.remove('is-navigating');
         }
     };
 
     if (shell && content) {
         document.addEventListener('click', (event) => {
+            if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
             const link = event.target.closest('a');
             if (!isInternalGet(link)) return;
             const url = new URL(link.href, window.location.href);
+            if (url.pathname === window.location.pathname && url.search === window.location.search && url.hash) return;
             if (url.pathname.includes('/download')) return;
             event.preventDefault();
             navigate(url);

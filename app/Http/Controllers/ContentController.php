@@ -9,6 +9,7 @@ use App\Models\Role;
 use App\Models\User;
 use App\Models\WorkspaceItem;
 use App\Support\FinancialReport;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -124,6 +125,9 @@ class ContentController extends Controller
             if ($newPath) {
                 Storage::disk('local')->delete($newPath);
             }
+            if ($error instanceof UniqueConstraintViolationException && $kind === 'report') {
+                throw ValidationException::withMessages(['report_month' => __('financial.duplicate_month')]);
+            }
             throw $error;
         }
         if ($newPath && $oldPath) {
@@ -159,7 +163,11 @@ class ContentController extends Controller
             $request->merge(['report_month' => $request->input('report_month').'-01']);
         }
         $rules = [
-            'report_month' => ['nullable', 'date_format:Y-m-d', 'regex:/^(19|20|21)\d{2}-(0[1-9]|1[0-2])-01$/', 'before:2101-01-01', Rule::unique('workspace_items')->where('property_id', $request->input('property_id'))->ignore($record->id)],
+            'report_month' => ['nullable', 'date_format:Y-m-d', 'regex:/^(19|20|21)\d{2}-(0[1-9]|1[0-2])-01$/', 'before:2101-01-01', function ($attribute, $value, $fail) use ($request, $record) {
+                if (WorkspaceItem::where('property_id', $request->input('property_id'))->whereDate('report_month', $value)->when($record->exists, fn ($query) => $query->whereKeyNot($record->id))->exists()) {
+                    $fail(__('financial.duplicate_month'));
+                }
+            }],
             'financial_data' => 'nullable|array:'.implode(',', [...FinancialReport::FIELDS, 'components', 'source_name', 'source_notes', 'monthly_rows', 'annual_rows']),
             'financial_data.components' => 'nullable|array:'.implode(',', FinancialReport::COMPONENTS),
             'financial_data.source_name' => 'nullable|string|max:255',

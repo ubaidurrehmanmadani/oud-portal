@@ -21,7 +21,7 @@
     <details class="report-disclosure"><summary>{{ __('financial.source_tables') }}</summary><p>{{ __('financial.source_help') }}</p>
         @foreach (['monthly_rows', 'annual_rows'] as $table)
             <section data-source-table="{{ $table }}"><h3>{{ __('financial.'.$table) }}</h3>
-                <div class="table-scroll"><table class="content-table"><thead><tr><th>{{ __('financial.metric') }}</th><th>{{ __('financial.reference') }}</th>@foreach (\App\Support\FinancialReport::COMPONENTS as $component)<th>{{ __('financial.'.$component) }}</th>@endforeach<th>{{ __('workspace.actions') }}</th></tr></thead><tbody>
+                <div class="table-scroll"><table class="content-table"><thead><tr><th>{{ __('financial.metric') }}</th><th>{{ __('financial.reference') }}</th>@foreach (\App\Support\FinancialReport::COMPONENTS as $component)<th>{{ __('financial.'.$component) }}</th>@endforeach<th>{{ __('workspace.action') }}</th></tr></thead><tbody>
                 @foreach (old('financial_data.'.$table, data_get($record->financial_data ?? [], $table)) ?: [[]] as $rowIndex => $sourceRow)
                     @include('content.source-row', ['rowIndex' => $rowIndex, 'sourceRow' => $sourceRow])
                 @endforeach

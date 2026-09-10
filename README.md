@@ -27,6 +27,8 @@ php artisan test
 
 Use an admin account to create departments/properties and assign existing users, then publish documents, training, announcements, reports, and approval requests through **Manage content**. Empty workspaces show real empty states until records are added.
 
+The updated landlord dashboard includes property summaries and monthly financial reports with charts, source tables, forecasts, reconciliation and profit/loss. In **Manage content → Create report**, select a property and reporting month, enter verified figures, preview the draft, then publish it. Landlords can access only published reports for assigned properties. The reference's unpublished workbook previews and invented demo figures are not imported into business records. See the implementation documentation for all 136 reference-screen mappings and local verification.
+
 ## About Laravel
 
 Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
