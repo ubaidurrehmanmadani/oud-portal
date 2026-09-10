@@ -24,7 +24,9 @@ class WorkspaceController extends Controller
         $counts = (clone $query)->selectRaw('kind, count(*) as total')->groupBy('kind')->pluck('total', 'kind');
 
         return view('workspace.dashboard', $data + [
-            'title' => __('portal.'.match ($expected) {
+            'title' => $expected === UserRole::LANDLORD && $request->routeIs('dashboard.landlord')
+                ? 'Property dashboard'
+                : __('portal.'.match ($expected) {
                 UserRole::ADMIN => 'admin_dashboard', UserRole::DEPARTMENT_MANAGER => 'manager_dashboard', UserRole::EMPLOYEE => 'employee_dashboard', UserRole::LANDLORD => 'landlord_dashboard'
             }),
             'counts' => $counts,
@@ -49,6 +51,11 @@ class WorkspaceController extends Controller
         }
         if ($section !== 'search') {
             $query->where('kind', $this->kind($section));
+            if ($section === 'reports') {
+                $query->where(function ($reportQuery) {
+                    $reportQuery->whereNull('category')->orWhere('category', '!=', 'dashboard-history');
+                });
+            }
         } else {
             $query->whereIn('kind', ['document', 'training', 'announcement']);
         }

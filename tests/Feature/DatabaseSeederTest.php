@@ -7,6 +7,7 @@ use App\Models\Role;
 use App\Models\User;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class DatabaseSeederTest extends TestCase
@@ -36,5 +37,19 @@ class DatabaseSeederTest extends TestCase
 
         $this->assertDatabaseCount('users', 0);
         $this->assertDatabaseCount('roles', count(UserRole::cases()));
+    }
+
+    public function test_existing_landlords_receive_the_reference_workspace_data(): void
+    {
+        Storage::fake('local');
+        $landlord = User::factory()->create(['role' => UserRole::LANDLORD]);
+
+        $this->artisan('db:seed', ['--class' => DatabaseSeeder::class, '--force' => true])->assertSuccessful();
+
+        $this->assertCount(3, $landlord->fresh()->properties);
+        $this->assertDatabaseHas('workspace_items', ['kind' => 'report', 'title' => 'Monthly performance report']);
+        $this->assertDatabaseHas('workspace_items', ['kind' => 'document', 'title' => 'OUD Reserve lease register']);
+        $this->assertDatabaseCount('workspace_items', 26);
+        Storage::disk('local')->assertExists('workspace/demo/oud-reserve-lease-register.pdf');
     }
 }

@@ -33,7 +33,7 @@
     </aside>
     <main class="portal-main">
         <header class="topbar">
-            <div class="topbar-title"><span>{{ __('portal.brand_eyebrow') }}</span><strong>{{ $title }}</strong></div>
+            <div class="topbar-title"><span>{{ $isLandlord ? 'Oud Compass | Landlord portal' : __('portal.brand_eyebrow') }}</span><strong>{{ $title }}</strong></div>
             <div class="topbar-actions">
                 @include('partials.language-switcher')
                 @if ($isLandlord && request()->routeIs('dashboard.landlord') && $properties->isNotEmpty())
@@ -46,7 +46,7 @@
                         </select>
                     </form>
                 @endif
-                <div class="portal-profile"><strong>{{ auth()->user()->name }}</strong><span>{{ auth()->user()->role->label() }}</span></div>
+                <div class="portal-profile"><strong>{{ auth()->user()->name }}</strong><span>{{ auth()->user()->role->label() }} · {{ auth()->user()->email }}</span></div>
                 <form method="POST" action="{{ route('logout') }}">@csrf<button class="button button-secondary">{{ __('portal.logout') }}</button></form>
             </div>
         </header>
