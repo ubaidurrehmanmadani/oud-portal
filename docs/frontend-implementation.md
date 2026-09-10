@@ -81,6 +81,8 @@ To populate an existing installation, use an admin account to create departments
 
 `public/oud/styles.css` is copied from the supplied CSS. Reference imagery is copied to `public/oud/assets/`. Laravel-specific compatibility, responsive fixes, and font fallbacks live in `public/oud/application.css`. `public/oud/password-eye.js` supplies accessible localized password visibility controls. English and Arabic workspace labels live in `lang/en/workspace.php` and `lang/ar/workspace.php`.
 
+Landlord list screens use one shared action convention: row content expands on the left and every action stays in a right-side cluster. View and Review use the dark primary pill, Download uses the outlined neutral variant, and Approve uses the olive success variant. This applies consistently to Properties, Reports, Documents, and Approvals and remains responsive by moving the action cluster below the row content on narrow screens.
+
 When the owner supplies a new reference folder:
 
 1. Compare the updated HTML, CSS, and prototype JavaScript with the integrated screens.
