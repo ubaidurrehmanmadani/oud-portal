@@ -1,0 +1,8 @@
+/* Fixed account switch link using the existing OUD palette. */
+a.oud-user-role { position:fixed; left:auto; right:12px; top:50%; transform:translateY(-50%); z-index:1000; display:inline-flex; align-items:center; gap:8px; padding:12px 16px; border:1px solid rgba(255,255,255,.45); border-radius:999px; background:rgba(94,102,85,.70); color:#F3EBDD!important; font:500 13px Poppins,Arial,sans-serif; text-decoration:none; backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); }
+a.oud-user-role svg { width:20px; height:20px; flex:none; }
+a.oud-user-role:focus-visible { outline:2px solid #B5A48D; outline-offset:3px; }
+
+.oud-user-role svg { color:#F3EBDD; }
+
+.oud-user-role { flex-direction:column; justify-content:center; gap:6px; text-align:center; }
