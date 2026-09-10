@@ -32,6 +32,22 @@ class WorkspaceTest extends TestCase
         }
     }
 
+    public function test_landlord_navigation_contains_only_landlord_sections(): void
+    {
+        $owner = User::factory()->create(['role' => UserRole::LANDLORD]);
+
+        $this->actingAs($owner)->get(route('dashboard.landlord'))
+            ->assertOk()
+            ->assertSee('Property workspace')
+            ->assertSee(route('landlord.index', ['section' => 'properties']), false)
+            ->assertSee(route('landlord.index', ['section' => 'reports']), false)
+            ->assertSee(route('landlord.index', ['section' => 'documents']), false)
+            ->assertSee(route('landlord.index', ['section' => 'approvals']), false)
+            ->assertDontSee('/dashboard/admin')
+            ->assertDontSee('/staff/training')
+            ->assertDontSee('/admin/users');
+    }
+
     public function test_all_staff_and_landlord_pages_render_in_both_languages(): void
     {
         foreach (['en', 'ar'] as $locale) {

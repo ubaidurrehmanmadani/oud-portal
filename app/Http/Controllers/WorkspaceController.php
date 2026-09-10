@@ -6,6 +6,7 @@ use App\Enums\UserRole;
 use App\Models\WorkspaceItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 
@@ -28,7 +29,9 @@ class WorkspaceController extends Controller
             }),
             'counts' => $counts,
             'latestReport' => (clone $query)->where('kind', 'report')->where('status', 'published')->latest('published_at')->latest('id')->first(),
-            'reportHistory' => (clone $query)->where('kind', 'report')->where('status', 'published')->whereNotNull('occupancy')->latest('published_at')->latest('id')->limit(12)->get()->sortBy('published_at')->values(),
+            'reportHistory' => Schema::hasColumn('workspace_items', 'occupancy')
+                ? (clone $query)->where('kind', 'report')->where('status', 'published')->whereNotNull('occupancy')->latest('published_at')->latest('id')->limit(12)->get()->sortBy('published_at')->values()
+                : collect(),
             'pendingApprovals' => (clone $query)->where('kind', 'approval')->where('status', 'pending')->count(),
             'recent' => (clone $query)->latest()->limit(6)->get(),
         ]);

@@ -13,8 +13,8 @@
 <div class="portal {{ $isLandlord ? 'landlord-portal' : '' }}">
     <aside class="sidebar">
         <div class="sidebar-brand"><a href="{{ route(auth()->user()->dashboardRouteName()) }}"><img src="{{ asset('oud/assets/oud-logo.png') }}" alt="OUD Real Estate"></a></div>
-        <div><p class="nav-label">{{ __('workspace.workspace') }}</p>
-            <nav class="nav" aria-label="{{ __('workspace.workspace') }}">
+        <div><p class="nav-label">{{ $isLandlord ? 'Property workspace' : __('workspace.workspace') }}</p>
+            <nav class="nav" aria-label="{{ $isLandlord ? 'Property workspace' : __('workspace.workspace') }}">
                 <a class="{{ request()->routeIs('dashboard.*') ? 'active' : '' }}" href="{{ route(auth()->user()->dashboardRouteName()) }}">{{ __('workspace.dashboard') }}</a>
                 @foreach ($isLandlord ? ['properties', 'reports', 'documents', 'approvals'] : ['documents', 'training', 'announcements', 'search'] as $navSection)
                     <a class="{{ ($section ?? '') === $navSection ? 'active' : '' }}" href="{{ route($isLandlord ? 'landlord.index' : 'staff.index', ['section' => $navSection]) }}">{{ __('workspace.'.$navSection) }}</a>
