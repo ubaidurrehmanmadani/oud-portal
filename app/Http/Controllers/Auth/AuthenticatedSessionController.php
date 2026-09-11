@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Models\LoginEvent;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
@@ -15,7 +17,18 @@ class AuthenticatedSessionController extends Controller
 {
     public function create(): View
     {
-        return view('auth.login');
+        $demoAccounts = [];
+        if (app()->environment('local')) {
+            $users = User::whereIn('email', config('demo-access.accounts'))->get()->keyBy('email');
+            foreach (config('demo-access.accounts') as $role => $email) {
+                $user = $users->get($email);
+                $demoAccounts[] = ['email' => $email, 'label' => UserRole::from($role)->label(),
+                    'ready' => $user && $user->role->value === $role && $user->approval_status === 'approved'
+                        && Hash::check(config('demo-access.password'), $user->password)];
+            }
+        }
+
+        return view('auth.login', compact('demoAccounts'));
     }
 
     public function store(Request $request): RedirectResponse

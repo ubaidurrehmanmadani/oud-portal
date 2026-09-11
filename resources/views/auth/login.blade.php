@@ -39,4 +39,7 @@
         {{ __('portal.need_account') }}
         <a href="{{ route('register') }}">{{ __('portal.sign_up') }}</a>
     </p>
+    @if (app()->environment('local') && count($demoAccounts))
+        @include('auth.partials.demo-access')
+    @endif
 @endsection

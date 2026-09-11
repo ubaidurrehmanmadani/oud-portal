@@ -132,5 +132,5 @@ return [
     'register_brand' => 'Access designed around your role.',
     'forgot_brand' => 'Secure access, thoughtfully restored.',
     'reset_brand' => 'A considered way back in.',
-    'login_brand' => 'One secure portal for staff, departments, and landlords.',
+    'login_brand' => 'Employees & Landlord portal',
 ];

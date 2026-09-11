@@ -1,6 +1,16 @@
 <?php
 
 return [
+    'demo_access' => 'Demo access',
+    'demo_hint' => 'Local testing only · click an email or password to copy.',
+    'demo_ready' => 'Account ready',
+    'demo_unavailable' => 'Account not ready',
+    'demo_copy' => 'Copy :value',
+    'demo_copy_password' => 'Copy demo password',
+    'demo_copied' => 'Copied!',
+    'demo_copy_failed' => 'Could not copy. Please copy the text manually.',
+    'login_brand_eyebrow' => 'Oud Compass',
+    'login_brand_copy' => 'One secure portal for staff, departments, and landlords.',
     'account_requests' => 'Account approval requests',
     'account_privileged_notice' => 'Admin and Department Manager accounts require approval by an existing Admin before login.',
     'account_request_saved' => 'Your account request has been submitted. An existing Admin must approve it before you can log in.',

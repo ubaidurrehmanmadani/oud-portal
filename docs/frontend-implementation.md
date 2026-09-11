@@ -55,6 +55,10 @@ Financial components include office, mezzanine, lobby/corridors, terrace, retail
 
 ## Account approval — 11 September 2026
 
+The local login page includes a branded demo-access card with four role accounts from `config/demo-access.php`. Each email and the shared demo password has click-to-copy feedback and accessible status announcements. Readiness checks verify stored role, approval and password. The card is never rendered outside the `local` environment; do not configure publicly accessible deployments as local or reuse these publicly documented demo passwords for real accounts. No production account provisioning is performed.
+
+The requested local demo manager and employee belong to Property Management; the demo manager has financial submission permission and the manager/landlord are assigned the five demo properties. The landlord demo address intentionally uses `saad+landload@gmail.com` as requested; other existing landlord accounts are retained.
+
 Migration `2026_09_11_150000_add_account_approval_to_users.php` adds approval status, reviewer and decision timestamp. Existing and Admin-created accounts default to approved. Public privileged registrations explicitly set pending before insertion; submitted approval/permission fields are ignored. Both login and web middleware enforce approval, including already-authenticated pending sessions.
 
 Admins use **Account approval requests** (`/admin/users/account-requests`) to inspect applicants, edit department assignments and approve or reject access. Decisions are transactionally locked, reject self-approval and repeat decisions, and write audit records. Rejected accounts remain blocked. Approving a manager does not grant financial upload permission. Email notification delivery is not implemented; applicants return to login after approval. Local regression coverage: **48 tests / 2,179 assertions**.
@@ -80,6 +84,7 @@ Application JavaScript progressively enhances internal GET navigation while pres
 Property financial pages use the full available body width beside the sidebar, without a fixed desktop content-width cap. Responsive padding and internally scrolling tables are retained for both locales.
 Property sidebar links use flex alignment to keep their labels vertically centered on desktop and mobile in both locales.
 All authentication and workspace pages use the shared language-switcher partial: one joined pill with an olive active segment, cream background, bronze inactive label and desert outline. English stays on the left and Arabic on the right in both locales; keyboard focus and pressed state are exposed accessibly.
+Text inputs and selects share the sign-up field styling (54px height, 8px corners, cream fill and desert border), including branded focus and autofill states. Textareas keep their larger height; checkboxes/radios use an olive accent without inheriting text-field dimensions. Login-specific brand copy uses dedicated translations.
 
 For future changes, update the relevant integrated views/assets and server actions together, preserve role and assignment checks, and add migrations only for new persisted data. Check both locales, desktop/mobile layout, filters and saved workflows.
 
