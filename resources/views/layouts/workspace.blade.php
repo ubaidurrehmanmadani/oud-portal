@@ -50,7 +50,7 @@
             </div>
         </header>
         <section class="content {{ $isLandlord ? 'landlord-content' : '' }}" data-page-content>
-            @if ($isLandlord && $properties->isNotEmpty() && !request()->routeIs('workspace.*') && !request()->routeIs('dashboard.landlord') && !request()->routeIs('landlord.financials'))
+            @if ($isLandlord && $properties->isNotEmpty() && !isset($section) && !request()->routeIs('workspace.*') && !request()->routeIs('dashboard.landlord') && !request()->routeIs('landlord.financials'))
                 <form method="GET" class="workspace-filters">
                     <label for="property">{{ __('workspace.property') }}</label>
                     <select id="property" name="property">@unless(request()->routeIs('dashboard.landlord'))<option value="">{{ __('workspace.all_properties') }}</option>@endunless

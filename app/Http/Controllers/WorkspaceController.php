@@ -6,6 +6,7 @@ use App\Enums\UserRole;
 use App\Models\Property;
 use App\Models\WorkspaceItem;
 use App\Support\FinancialReport;
+use App\Support\ReferenceReports;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -28,7 +29,7 @@ class WorkspaceController extends Controller
 
         if ($data['isLandlord']) {
             $summaries = WorkspaceItem::visibleTo($request->user())->where('kind', 'report')->where('status', 'published')
-                ->orderByDesc('report_month')->latest('published_at')->latest('id')->get()->unique('property_id')->keyBy('property_id');
+                ->orderByRaw("CASE WHEN category = 'reference-financial' THEN 1 WHEN report_month IS NOT NULL THEN 0 ELSE 2 END")->orderByRaw("CASE WHEN category = 'reference-financial' THEN report_month END ASC")->orderByDesc('report_month')->latest('published_at')->latest('id')->get()->unique('property_id')->keyBy('property_id');
 
             return view('workspace.landlord-dashboard', $data + ['title' => __('financial.title'), 'summaries' => $summaries]);
         }
@@ -54,7 +55,7 @@ class WorkspaceController extends Controller
         $data = $this->context($request);
         $landlord = $data['isLandlord'];
         abort_unless(in_array($section, $landlord ? ['properties', 'reports', 'documents', 'approvals'] : ['documents', 'training', 'announcements', 'search'], true), 404);
-        $request->validate(['q' => 'nullable|string|max:200', 'category' => 'nullable|string|max:100', 'status' => ['nullable', Rule::in(['published', 'pending', 'approved', 'rejected'])]]);
+        $request->validate(['q' => 'nullable|string|max:200', 'category' => 'nullable|string|max:100', 'period' => 'nullable|string|max:100', 'sort' => ['nullable', Rule::in(['newest', 'oldest', 'title'])], 'status' => ['nullable', Rule::in(['published', 'pending', 'approved', 'rejected'])]]);
         $query = WorkspaceItem::visibleTo($request->user())->with(['property', 'department']);
         if ($data['selectedProperty']) {
             $query->where('property_id', $data['selectedProperty']->id);
@@ -69,6 +70,10 @@ class WorkspaceController extends Controller
         } else {
             $query->whereIn('kind', ['document', 'training', 'announcement']);
         }
+        $categories = (clone $query)->whereNotNull('category')->distinct()->orderBy('category')->pluck('category');
+        if ($request->filled('period')) {
+            $query->where('period', 'like', '%'.$request->string('period').'%');
+        }
         if ($request->filled('q')) {
             $term = '%'.$request->string('q').'%';
             $query->where(fn ($q) => $q->where('title', 'like', $term)->orWhere('body', 'like', $term));
@@ -80,9 +85,16 @@ class WorkspaceController extends Controller
             $query->where('status', $request->string('status'));
         }
 
+        $sort = $request->input('sort', 'newest');
+        if ($section === 'reports' && ! $request->filled('category')) {
+            $query->orderByRaw("CASE WHEN category = 'reference-financial' THEN 1 ELSE 0 END");
+        }
+        $query->orderBy($sort === 'title' ? 'title' : 'created_at', $sort === 'newest' ? 'desc' : 'asc')->orderBy('id');
+
         return view('workspace.'.$section, $data + [
             'title' => __('workspace.'.$section), 'section' => $section,
-            'items' => $query->latest()->paginate(12)->withQueryString(),
+            'items' => $query->paginate(12)->withQueryString(), 'categories' => $categories,
+            'propertyItems' => $data['properties']->filter(fn ($property) => (! $data['selectedProperty'] || $property->id === $data['selectedProperty']->id) && (! $request->filled('q') || str_contains(mb_strtolower($property->name.' '.$property->location.' '.$property->type), mb_strtolower($request->input('q'))))),
         ]);
     }
 
@@ -94,7 +106,7 @@ class WorkspaceController extends Controller
             return redirect()->route($request->user()->role === UserRole::ADMIN ? 'admin.financials' : 'landlord.financials', ['property' => $record->property_id, 'year' => $record->report_month->year, 'month' => $record->report_month->month]);
         }
 
-        return view('workspace.detail', $this->context($request) + ['title' => $record->title, 'item' => $record]);
+        return view(in_array($record->kind, ['report', 'approval'], true) ? 'workspace.landlord-item' : 'workspace.detail', $this->context($request) + ['title' => $record->title, 'item' => $record]);
     }
 
     public function download(Request $request, int $item)
@@ -119,15 +131,18 @@ class WorkspaceController extends Controller
             ->where('property_id', $property)->whereNotNull('report_month');
         $latest = (clone $query)->orderByDesc('report_month')->first();
         $year = (int) $request->input('year', $latest?->report_month->year ?? now()->year);
-        $month = (int) $request->input('month', $latest && $latest->report_month->year === $year ? $latest->report_month->month : 1);
+        $month = (int) $request->input('month', $latest && $latest->category !== 'reference-financial' && $latest->report_month->year === $year ? $latest->report_month->month : 1);
         $history = (clone $query)->whereYear('report_month', $year)->orderBy('report_month')->get()
             ->mapWithKeys(fn ($record) => [$record->report_month->month => new FinancialReport($record)]);
         $report = $history->get($month, new FinancialReport(null));
         $years = (clone $query)->pluck('report_month')->map(fn ($date) => Carbon::parse($date)->year)->push($year)->unique()->sortDesc()->values();
 
-        return view('workspace.financial-report', array_replace($data, compact('selectedProperty', 'year', 'month', 'history', 'report', 'years')) + [
+        $financialRoute = $isAdmin ? 'admin.financials' : 'landlord.financials';
+        $referenceContent = $report->record ? (new ReferenceReports)->content($report->record, $data['properties'], $financialRoute) : null;
+
+        return view($referenceContent ? 'workspace.reference-financial-report' : 'workspace.financial-report', array_replace($data, compact('selectedProperty', 'year', 'month', 'history', 'report', 'years', 'referenceContent')) + [
             'title' => $selectedProperty->name.' · '.__('financial.title'), 'section' => 'reports', 'isFinancialReport' => true,
-            'financialRoute' => $isAdmin ? 'admin.financials' : 'landlord.financials',
+            'financialRoute' => $financialRoute,
         ]);
     }
 
@@ -158,7 +173,7 @@ class WorkspaceController extends Controller
         if ($request->routeIs('staff.*')) {
             abort_if($isLandlord, 403);
         }
-        $properties = $isLandlord ? $request->user()->properties()->orderBy('name')->get() : collect();
+        $properties = $isLandlord ? $request->user()->properties()->orderBy('name')->get()->sortBy(fn ($property) => array_search($property->name, array_values(ReferenceReports::PROPERTIES), true) === false ? 99 : array_search($property->name, array_values(ReferenceReports::PROPERTIES), true))->values() : collect();
         $selectedProperty = null;
         if ($isLandlord && $request->filled('property')) {
             $request->validate(['property' => 'integer']);

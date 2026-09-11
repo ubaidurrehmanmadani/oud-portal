@@ -1,6 +1,8 @@
 <?php
 
 return [
+    'reference_summary_note' => 'January 2027 summaries use the supplied Excel figures. Demo profit and loss is illustrative only.',
+    'demo_profit_loss' => 'Demo P&L — not from Excel',
     'duplicate_month' => 'A financial report already exists for this property and month. Edit the existing report.',
     'title' => 'Property financial reports', 'intro' => 'Choose a property to view its monthly figures and charts.',
     'property_reports' => 'Property reports', 'workspace' => 'Property workspace', 'monthly_intro' => 'Monthly income, collections and property performance.',

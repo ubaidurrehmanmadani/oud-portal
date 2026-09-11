@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'report_type' => 'نوع التقرير', 'report_contents' => 'محتويات التقرير', 'included_sections' => 'الأقسام المضمنة', 'available_file' => 'الملف المتاح', 'download_report' => 'تنزيل التقرير', 'request_details' => 'تفاصيل الطلب', 'request_type' => 'نوع الطلب', 'submitted_by' => 'مقدم الطلب', 'supporting_document' => 'المستند الداعم',
+    'section_occupancy' => 'أداء الإشغال والتأجير', 'section_revenue' => 'ملخص الإيرادات الإجمالية والصافية', 'section_maintenance' => 'ملاحظات الصيانة والتشغيل', 'section_market' => 'ملاحظات السوق والعقار',
+    'pagination' => 'التنقل بين الصفحات',
+    'all_categories' => 'جميع الفئات', 'sort' => 'ترتيب حسب', 'newest' => 'الأحدث أولاً', 'oldest' => 'الأقدم أولاً', 'reset_filters' => 'مسح عوامل التصفية',
     'workspace' => 'مساحة العمل',
     'dashboard' => 'لوحة التحكم',
     'documents' => 'المستندات',

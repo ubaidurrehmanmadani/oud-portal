@@ -153,7 +153,7 @@ Use **Manage content → Create report** to select a property/month, enter compo
 
 Admins can preview monthly records, including drafts, at `/admin/properties/{id}/financials`; existing report View links route to this preview. Publish through the existing report status field. Only published, non-future records for assigned properties appear in landlord financial pages, charts, lists and downloads. Pending/approved/rejected statuses are visible to landlords only for approval requests, never as a way to expose an unpublished report. Direct routes and changed assignments are rechecked on every request.
 
-Reference workbook figures are labelled **preview / not published**, and its P&L examples explicitly contain invented data. Neither is inserted into application business records. No original `.xlsx` workbook was supplied in `OUD_project/`; automatic spreadsheet parsing is not implemented. The full visual/data structure is ready for entry of verified figures and source rows. Notifications, manager financial submission/review stages and custom permissions described in the prototype's proposal-based role guide are not silently added; the integrated role guide accurately describes the application's enforced capabilities.
+The initial refresh omitted the reference dataset. The owner explicitly corrected this on 11 September and requested all supplied content. The restoration described below now imports the reference figures and retains their preview/demo labels. No original `.xlsx` workbook was supplied in `OUD_project/`; import extracts the saved values and cell references from the HTML. Notifications, manager financial submission/review stages and custom permissions described in the proposal-based role guide remain outside the existing workflow.
 
 Calculations add supplied component rents and service charges once, and calculate collection rate only when rent due is positive. Missing monthly records do not become zero bars or connected occupancy segments. Source tables and annual summaries preserve entered values and references independently of charts, including discrepancies. Forecasts are not represented as net profit. P&L uses entered revenue and the three expense categories; the interface explains that incomplete categories produce incomplete totals.
 
@@ -164,3 +164,26 @@ Calculations add supplied component rents and service charges once, and calculat
 - All five copied stylesheets and 16 copied images were verified byte-for-byte against the supplied reference folder.
 - Laravel Pint formatted changed PHP. JavaScript syntax and Blade compilation were checked. Browser verification uses a separate SQLite fixture database and localhost preview; these checks do not constitute production verification.
 - Headless Chrome verified desktop widths at 1,440px and mobile widths at 390px: dashboard, financial report, expanded details, Arabic desktop/mobile, role dialog and admin financial form. Document width equals viewport width in all eight layout checks. Reviewed screenshots after correcting RTL grid proportions; no JavaScript exceptions were recorded. Property/month navigation, browser Back, preserved sidebar DOM, language switching, role-dialog focus/Escape, and source-row add/remove controls passed.
+
+## 11 September: restore the supplied content
+
+The reported empty dashboard had no property assignments. The initial implementation also omitted the reference financial records, so layout-only verification did not establish that the owner's account had content. Both omissions are corrected.
+
+- `ReferenceWorkspaceSeeder` imports five properties, 60 monthly financial records, the six general reports, three documents and six approval requests supplied by the reference screens/scripts. It assigns the reference properties to existing landlords without detaching other assignments. It does not change account credentials.
+- `ReferenceReports` parses all source component values, monthly/annual rows and cell references into stored report data. Imported reports render the original English/Arabic main-content markup, preserving all charts, captions, exact tables, notes, expanded disclosures and labelled demo P&L sections. Only shell duplication and prototype authentication are removed; property/month links resolve to authorized Laravel routes and inaccessible properties are omitted. The trusted reference folder must be included in deployments.
+- The dashboard displays the original January 2027 summaries, in the supplied property order. Administrator-created monthly reports take precedence when present. Editing an imported report through the content form removes its reference marker and uses the editable database-backed report view.
+- Properties now open their property report instead of returning to the unchanged dashboard. Landlord lists have working property/search/category filters, report-period filtering, approval-status filtering, sorting, reset and pagination. The original six reports remain ahead of monthly records. Pagination was fixed for the larger populated dataset.
+- Report details restore all four included-section entries and the separate download card. Approval details restore the property/amount/type/submitter fields, supporting-file link, comment and persisted approve/reject actions. Rerunning either import or the full seeder preserves final decisions.
+- The HTML references name PDF/XLSX attachments but do not include the original binaries. Available reference text is exported into valid, clearly labelled PDF/XLSX previews for working downloads; these are not represented as the absent original contracts/proposals. Administrator-uploaded files are retained.
+
+Applied locally:
+
+```bash
+php artisan oud:import-reference-content
+php artisan oud:sync-design-assets
+php artisan view:clear
+```
+
+The account shown in the owner's screenshot was checked against the local database after import: **5 assigned properties, 66 visible reports, 3 documents and 6 approvals**. This is local verification, not a claim about Laravel Cloud. After deploying, run the same import command in Cloud (or the existing `db:seed --force` deploy command, which now calls the importer).
+
+Verification: **40 tests / 2,058 assertions passed**, including all 120 reference report variants, exact figures/source references, repeat imports, saved decisions, restricted links, category/search/status filters and valid downloadable file signatures. Headless Chrome verified populated dashboard/listings, search, report details/download, original report tables, month switching, Arabic desktop/mobile layout and saved rejection in an isolated database. Source HTML/CSS/JS/assets remain unchanged.

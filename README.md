@@ -27,7 +27,7 @@ php artisan test
 
 Use an admin account to create departments/properties and assign existing users, then publish documents, training, announcements, reports, and approval requests through **Manage content**. Empty workspaces show real empty states until records are added.
 
-The updated landlord dashboard includes property summaries and monthly financial reports with charts, source tables, forecasts, reconciliation and profit/loss. In **Manage content → Create report**, select a property and reporting month, enter verified figures, preview the draft, then publish it. Landlords can access only published reports for assigned properties. The reference's unpublished workbook previews and invented demo figures are not imported into business records. See the implementation documentation for all 136 reference-screen mappings and local verification.
+The landlord dashboard includes the supplied reference content for all five properties, including 60 monthly financial records, complete EN/AR report pages, source tables, charts and explicitly labelled demo profit/loss. Run `php artisan oud:import-reference-content` to populate the reference content and existing landlord assignments without resetting saved decisions or editing accounts. Normal `db:seed` also imports it. In **Manage content → Create report**, administrators can create additional reports or replace reference figures. Landlord access remains assignment-checked. See the implementation documentation for screen mappings and verification.
 
 ## About Laravel
 
