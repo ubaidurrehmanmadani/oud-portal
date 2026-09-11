@@ -16,7 +16,7 @@ class ReferenceReports
         if (! array_key_exists($slug, self::PROPERTIES) || $month < 1 || $month > 12 || ! in_array($locale, ['en', 'ar'], true)) {
             throw new \InvalidArgumentException('Unknown reference report.');
         }
-        $path = base_path('OUD_project/excel_report_'.$slug.'_'.sprintf('%02d', $month).($locale === 'ar' ? '_ar' : '').'.html');
+        $path = resource_path('reports/'.$slug.'_'.sprintf('%02d', $month).($locale === 'ar' ? '_ar' : '').'.html');
         $document = new DOMDocument;
         $previous = libxml_use_internal_errors(true);
         try {

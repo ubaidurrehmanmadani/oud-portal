@@ -7,21 +7,20 @@
 <a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
 </p>
 
-## OUD frontend design reference
+## Application frontend
 
-The root-level `OUD_project/` folder contains the frontend screens supplied by the frontend developer and is the design reference for this application. When implementing or updating screens for each role, adopt the corresponding designs, layouts, styling, assets, and interactions from this folder, while integrating the application's real data, workflows, and role permissions.
+The integrated Laravel application is the source of truth for all future changes. Edit screens in `resources/views/`, styles and interactions in `public/oud/`, and application workflows in `app/` and `routes/`.
 
-This folder may be updated or replaced with newer designs. When the project owner announces an update and requests frontend changes, review the latest contents and apply the relevant changes to the application's role-specific screens. Treat the folder as the supplied design reference; implement application changes in the appropriate application files.
+The 120 English/Arabic monthly report content resources live in `resources/reports/`. These application-owned files support existing imported reports and initial financial-data seeding; keep them in deployments.
 
 ## Frontend implementation
 
 The supplied OUD designs are now integrated into Laravel authentication, staff and landlord workspaces, and the shared admin layout. Routes, database-backed content, private downloads, department/property assignments, and landlord decisions are implemented.
 
-See [the implementation documentation](docs/frontend-implementation.md) for the screen map, database changes, access rules, verification, current limits, and the process for adopting future design updates.
+See [the implementation documentation](docs/frontend-implementation.md) for the screen map, database changes, access rules, verification, current limits, and maintenance guidance.
 
 ```bash
 php artisan migrate
-php artisan oud:sync-design-assets
 php artisan test
 ```
 
