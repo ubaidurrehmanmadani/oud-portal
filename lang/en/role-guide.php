@@ -12,8 +12,8 @@ return [
         'cannot' => ['Upload or edit workspace content.', 'Access other departments’ restricted content or landlord property records.', 'Manage users, assignments or system settings.'],
     ],
     'department_manager' => [
-        'can' => ['View and search published staff content available to your department.', 'Create and edit documents, training and announcements in your assigned department.', 'Publish department content and replace its attached files.'],
-        'cannot' => ['Manage content without a department assignment or outside your department.', 'Manage user accounts, property assignments or landlord reports.', 'Change system settings or override role restrictions.'],
+        'can' => ['View and search published staff content available to your department.', 'Create, edit and remove documents, training and announcements in your assigned department.', 'Publish department content and replace its attached files.', 'With explicit Admin permission, upload monthly Excel/PDF reports for assigned properties, save drafts and submit them for review.'],
+        'cannot' => ['Manage content without a department assignment or outside your department.', 'Manage user accounts or property assignments, access landlord records or publish landlord reports.', 'Edit submitted reports or change system settings or role restrictions.'],
     ],
     'admin' => [
         'can' => ['Create and edit users, roles assigned to users, departments and properties.', 'Assign landlords to properties and users to departments.', 'Manage workspace content, enter monthly financial figures and publish reports.', 'Inspect stored permissions, login activity and integration status.'],

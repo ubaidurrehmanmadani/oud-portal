@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\UserRole;
+use App\Models\AuditEvent;
 use App\Models\Department;
 use App\Models\Property;
 use App\Models\Role;
@@ -28,7 +29,17 @@ class ContentController extends Controller
             $query->where('department_id', $request->user()->department_id)->where('audience', 'staff')->whereIn('kind', ['document', 'training', 'announcement']);
         }
 
-        return view('content.index', $this->context() + ['items' => $query->paginate(20)]);
+        $filters = $request->validate(['q' => 'nullable|string|max:255', 'kind' => ['nullable', Rule::in(self::KINDS)], 'status' => ['nullable', Rule::in(['draft', 'published', 'pending', 'approved', 'rejected'])]]);
+        if ($filters['q'] ?? null) {
+            $query->where('title', 'like', '%'.$filters['q'].'%');
+        }
+        foreach (['kind', 'status'] as $filter) {
+            if ($filters[$filter] ?? null) {
+                $query->where($filter, $filters[$filter]);
+            }
+        }
+
+        return view('content.index', $this->context() + ['items' => $query->paginate(20)->withQueryString()]);
     }
 
     public function create(Request $request)
@@ -45,6 +56,22 @@ class ContentController extends Controller
         $record = $this->editable($request, $item);
 
         return view('content.form', $this->formData($record->kind) + ['record' => $record]);
+    }
+
+    public function destroy(Request $request, int $item)
+    {
+        $record = $this->editable($request, $item);
+        abort_unless(in_array($record->kind, ['document', 'training', 'announcement'], true), 403);
+        $path = $record->file_path;
+        DB::transaction(function () use ($request, $record) {
+            AuditEvent::create(['user_id' => $request->user()->id, 'event' => 'content.deleted:'.$record->id, 'ip_address' => $request->ip(), 'user_agent' => substr((string) $request->userAgent(), 0, 500)]);
+            $record->delete();
+        });
+        if ($path) {
+            Storage::disk('local')->delete($path);
+        }
+
+        return redirect()->route('content.index')->with('status', __('workspace.saved'));
     }
 
     public function store(Request $request)
@@ -120,6 +147,7 @@ class ContentController extends Controller
                     $record->created_by = $request->user()->id;
                 }
                 $record->save();
+                AuditEvent::create(['user_id' => $request->user()->id, 'event' => 'content.saved:'.$record->id, 'ip_address' => $request->ip(), 'user_agent' => substr((string) $request->userAgent(), 0, 500)]);
             });
         } catch (\Throwable $error) {
             if ($newPath) {

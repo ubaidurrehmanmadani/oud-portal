@@ -33,6 +33,11 @@ class AccountManagementController extends Controller
             'department' => ['description' => 'nullable|string|max:5000'],
         };
         $data = $request->validate($rules);
+        if ($kind === 'user') {
+            $request->validate(['can_submit_financial_reports' => 'nullable|boolean']);
+            $record->can_submit_financial_reports = $data['role'] === UserRole::DEPARTMENT_MANAGER->value
+                && ! empty($data['department_id']) && $request->boolean('can_submit_financial_reports');
+        }
         abort_if($kind === 'user' && $record->id === $request->user()->id && $data['role'] !== UserRole::ADMIN->value, 422);
         DB::transaction(function () use ($record, $kind, $data) {
             $record->fill(collect($data)->except(['properties', 'landlords'])->all());
@@ -41,9 +46,10 @@ class AccountManagementController extends Controller
             }
             $record->save();
             if ($kind === 'user') {
-                $record->properties()->sync($record->role === UserRole::LANDLORD ? ($data['properties'] ?? []) : []);
+                $record->properties()->sync($record->role === UserRole::LANDLORD || $record->canSubmitFinancialReports() ? ($data['properties'] ?? []) : []);
             } elseif ($kind === 'property') {
-                $record->users()->sync($data['landlords'] ?? []);
+                $managerIds = $record->users()->where('role', UserRole::DEPARTMENT_MANAGER)->pluck('users.id')->all();
+                $record->users()->sync(array_unique([...($data['landlords'] ?? []), ...$managerIds]));
             }
         });
 

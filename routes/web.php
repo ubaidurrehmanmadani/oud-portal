@@ -8,6 +8,7 @@ use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\ContentController;
 use App\Http\Controllers\LocaleController;
+use App\Http\Controllers\ManagerReportController;
 use App\Http\Controllers\WorkspaceController;
 use Illuminate\Support\Facades\Route;
 
@@ -45,6 +46,13 @@ Route::middleware('auth')->group(function () {
     Route::put('/accounts/{kind}/{id}', [AccountManagementController::class, 'update'])->middleware('admin')->where('kind', 'user|property|department')->whereNumber('id')->name('accounts.update');
 
     Route::get('/content', [ContentController::class, 'index'])->name('content.index');
+    Route::get('/manager/reports', [ManagerReportController::class, 'index'])->name('manager.reports.index');
+    Route::get('/manager/reports/upload', [ManagerReportController::class, 'create'])->name('manager.reports.create');
+    Route::post('/manager/reports', [ManagerReportController::class, 'store'])->name('manager.reports.store');
+    Route::get('/manager/reports/{submission}/edit', [ManagerReportController::class, 'edit'])->whereNumber('submission')->name('manager.reports.edit');
+    Route::put('/manager/reports/{submission}', [ManagerReportController::class, 'update'])->whereNumber('submission')->name('manager.reports.update');
+    Route::get('/manager/reports/{submission}/download', [ManagerReportController::class, 'download'])->whereNumber('submission')->name('manager.reports.download');
+    Route::delete('/content/{item}', [ContentController::class, 'destroy'])->whereNumber('item')->name('content.destroy');
     Route::get('/content/create', [ContentController::class, 'create'])->name('content.create');
     Route::post('/content', [ContentController::class, 'store'])->name('content.store');
     Route::get('/content/{item}/edit', [ContentController::class, 'edit'])->whereNumber('item')->name('content.edit');

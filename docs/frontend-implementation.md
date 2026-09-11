@@ -22,6 +22,8 @@ Blade paths below are relative to `resources/views/`.
 | Admin financial preview | `/admin/properties/{id}/financials` | Same financial views, including authorized draft previews |
 | Content management | `/content`, `/content/create` | Role-scoped content forms and controllers |
 | Account/assignment editing | `/accounts/{user\|department\|property}/{id}/edit` | Admin account management |
+| Manager submissions | `/manager/reports` | `manager/reports.blade.php`, search, status filter and pagination |
+| Manager upload/draft/detail | `/manager/reports/upload`, `/manager/reports/{id}/edit` | `manager/upload-report.blade.php` |
 
 The shared shell is `layouts/workspace.blade.php`. Lists support applicable property, search, category, period and approval-status filters, sorting, reset and pagination. Report details include sections and downloads. Approval details include request metadata, supporting files and persisted decisions.
 
@@ -51,6 +53,18 @@ Financial components include office, mezzanine, lobby/corridors, terrace, retail
 - Approval decisions record reviewer, timestamp and optional comment transactionally. Repeated decisions return HTTP 409; decided requests cannot be edited.
 - Uploads use the private local disk under `workspace/`; `/workspace/items/{id}/download` rechecks authorization. A public storage link is not required.
 
+## Manager workflow — 11 September 2026
+
+- Department Managers have dashboard shortcuts to create documents, training and announcements, plus content management. Existing private department libraries, search, download, publication and replacement remain available. Content management now has search/type/status filters and a two-stage removal control; removal deletes the attachment and rechecks department scope.
+- Run migration `2026_09_11_120000_create_manager_report_submissions.php`. It adds a default-off user permission, private `report_submissions` records and `audit_events` for content saves/removal and financial draft/submission actions. Authentication audit records remain separate.
+- An Admin enables **Allow financial report submissions** on an existing user's edit screen, selects **Department Manager**, assigns a department, and selects reporting properties. Reserve this permission for the Head of Property Management and Head of Hospitality Management. It is not granted automatically to department managers or based on department names. No existing account permissions are changed by the migration.
+- Authorized managers can upload XLSX/XLS/PDF files up to 20 MB, select an assigned property and month, add optional manual occupancy/revenue/rent figures and notes, save/replace a draft, download it privately and submit for review. One submission per manager/property/month prevents accidental duplicates. Pending submissions are locked; other managers, employees and landlords cannot open or download them. Revoking the permission, department or property assignment revokes access.
+- Uploads are stored privately under `report-submissions/`. File type/extension/size and ownership checks run server-side. The submitted original, month, author, department, figures and timestamp are retained. Submissions are separate from published workspace reports, so uploads cannot change landlord dashboards.
+- This step implements the manager-side submission workflow, not automatic Excel parsing or the Admin approval/publication screen. The UI explicitly states that spreadsheet figures are not extracted. Pending submissions remain private until the review/publication step is implemented. Template-to-cell mapping, reviewer corrections/rejection/resubmission and email delivery remain follow-up work; no notification delivery is claimed.
+- Managers still cannot administer accounts, change system settings or view landlord records. The optional requirement for Admin-granted user-account administration is not implemented as part of the financial submission permission.
+- Local automated verification: **45 tests / 2,123 assertions**, covering private upload/replacement, validation, duplicate months, permissions, assignment revocation, submission locking, department deletion and existing application regressions.
+- The migration was applied to local MySQL without changing existing account permissions. Headless Chrome verified manager navigation, a real file upload, draft save, submission locking, and English/Arabic desktop/mobile layouts against an isolated SQLite database. Blade compilation and formatting passed. Laravel Cloud still requires deployment and migration; these are local checks only.
+
 ## Styles and interactions
 
 Maintain the five shared stylesheets, `application.css`, `application.js`, `password-eye.js` and images directly in `public/oud/`. Financial styles are enabled only on financial pages. Application CSS includes responsive, RTL and print adaptations.
@@ -66,7 +80,7 @@ For future changes, update the relevant integrated views/assets and server actio
 - Original binary contracts, proposals and the source workbook were not supplied. Bundled text is exported into valid, clearly labelled PDF/XLSX previews, not represented as original attachments. Administrator-uploaded files are retained.
 - Optima/Swissra font files are not bundled. Readable fallbacks are available; Poppins and Noto Sans Arabic are requested from Google Fonts.
 - External/Odoo synchronization and notification delivery are not configured. Status pages do not claim these services are active.
-- Custom permission overrides and additional financial submission/review stages described in role guidance are not implemented workflows.
+- General custom permission overrides and Admin financial review/publication are not implemented. The manager-specific financial submission grant is implemented as described above.
 
 ## Verification and deployment
 

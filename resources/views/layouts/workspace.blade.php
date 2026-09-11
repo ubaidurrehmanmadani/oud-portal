@@ -31,6 +31,9 @@
                 @if (in_array(auth()->user()->role, [\App\Enums\UserRole::ADMIN, \App\Enums\UserRole::DEPARTMENT_MANAGER]))
                     <a href="{{ route('content.index') }}">{{ __('workspace.manage_content') }}</a>
                 @endif
+                @if (auth()->user()->canSubmitFinancialReports())
+                    <a class="{{ request()->routeIs('manager.reports.*') ? 'active' : '' }}" href="{{ route('manager.reports.index') }}">{{ __('portal.manager_reports') }}</a>
+                @endif
                 @if (auth()->user()->role === \App\Enums\UserRole::ADMIN)
                     @foreach (['users', 'permissions', 'departments', 'properties', 'documents', 'academy', 'reports', 'approvals', 'announcements', 'notifications', 'integrations', 'settings'] as $adminModule)
                         <a href="{{ route('admin.'.$adminModule.'.view') }}">{{ __('portal.'.($adminModule === 'academy' ? 'oud_academy' : $adminModule)) }}</a>

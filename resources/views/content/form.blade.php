@@ -42,5 +42,8 @@
     @endif
     <div class="wide"><button class="button button-primary">{{ __('workspace.save') }}</button></div>
 </form>
+@if (isset($record) && in_array($record->kind, ['document', 'training', 'announcement']))
+    <details class="manager-delete"><summary>{{ __('portal.manager_remove') }}</summary><p>{{ __('portal.manager_remove_help') }}</p><form method="POST" action="{{ route('content.destroy', $record) }}">@csrf @method('DELETE')<button class="button button-secondary">{{ __('portal.manager_remove_confirm') }}</button></form></details>
+@endif
 </section>
 @endsection

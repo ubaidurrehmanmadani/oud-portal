@@ -80,6 +80,8 @@ Department Managers cannot:
 - Change system-wide settings.
 - Create or delete user accounts unless an Admin grants that permission.
 
+Financial-report submission exception: the Head of Property Management and Head of Hospitality Management use the Department Manager role with an explicit Admin-granted financial submission permission and assigned reporting properties. They may upload monthly Excel/PDF reports, enter management figures, save drafts and submit for review. This does not grant access to landlord records, other managers' submissions, property administration or publication rights. Reports remain private until the review and approval stage is completed.
+
 ### Employee
 
 Employees can access only their own department.
