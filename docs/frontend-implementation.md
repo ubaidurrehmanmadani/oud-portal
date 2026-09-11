@@ -49,9 +49,15 @@ Financial components include office, mezzanine, lobby/corridors, terrace, retail
 - Department managers require a department assignment and can manage only their department's supported content.
 - Landlords see only published landlord content for assigned properties. Filters, financial routes, details, downloads and decisions recheck access.
 - Administrators manage content, accounts, departments and property assignments.
-- Public registration permits employee and landlord roles only.
+- Public registration offers all four roles. Admin and Department Manager applicants are saved as pending, remain logged out and cannot access protected routes until an existing approved Admin approves them. Employee and Landlord registration is unchanged.
 - Approval decisions record reviewer, timestamp and optional comment transactionally. Repeated decisions return HTTP 409; decided requests cannot be edited.
 - Uploads use the private local disk under `workspace/`; `/workspace/items/{id}/download` rechecks authorization. A public storage link is not required.
+
+## Account approval — 11 September 2026
+
+Migration `2026_09_11_150000_add_account_approval_to_users.php` adds approval status, reviewer and decision timestamp. Existing and Admin-created accounts default to approved. Public privileged registrations explicitly set pending before insertion; submitted approval/permission fields are ignored. Both login and web middleware enforce approval, including already-authenticated pending sessions.
+
+Admins use **Account approval requests** (`/admin/users/account-requests`) to inspect applicants, edit department assignments and approve or reject access. Decisions are transactionally locked, reject self-approval and repeat decisions, and write audit records. Rejected accounts remain blocked. Approving a manager does not grant financial upload permission. Email notification delivery is not implemented; applicants return to login after approval. Local regression coverage: **48 tests / 2,179 assertions**.
 
 ## Manager workflow — 11 September 2026
 
@@ -72,6 +78,8 @@ Maintain the five shared stylesheets, `application.css`, `application.js`, `pass
 Application JavaScript progressively enhances internal GET navigation while preserving the sidebar/topbar. Direct navigation remains the fallback for unavailable JavaScript, downloads and expired sessions. Role dialogs support Escape/backdrop dismissal and focus restoration. Password controls provide localized accessible labels.
 
 Property financial pages use the full available body width beside the sidebar, without a fixed desktop content-width cap. Responsive padding and internally scrolling tables are retained for both locales.
+Property sidebar links use flex alignment to keep their labels vertically centered on desktop and mobile in both locales.
+All authentication and workspace pages use the shared language-switcher partial: one joined pill with an olive active segment, cream background, bronze inactive label and desert outline. English stays on the left and Arabic on the right in both locales; keyboard focus and pressed state are exposed accessibly.
 
 For future changes, update the relevant integrated views/assets and server actions together, preserve role and assignment checks, and add migrations only for new persisted data. Check both locales, desktop/mobile layout, filters and saved workflows.
 

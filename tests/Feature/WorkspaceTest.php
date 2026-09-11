@@ -205,8 +205,10 @@ class WorkspaceTest extends TestCase
     public function test_public_registration_cannot_grant_privileged_roles(): void
     {
         foreach (['admin', 'department_manager'] as $role) {
-            $this->post('/sign-up', ['name' => 'Attempt', 'email' => $role.'@example.com', 'role' => $role, 'password' => 'password123', 'password_confirmation' => 'password123'])->assertSessionHasErrors('role');
+            $this->post('/sign-up', ['name' => 'Attempt', 'email' => $role.'@example.com', 'role' => $role, 'password' => 'password123', 'password_confirmation' => 'password123', 'approval_status' => 'approved'])->assertRedirect(route('login'));
+            $this->assertGuest();
+            $this->assertDatabaseHas('users', ['email' => $role.'@example.com', 'approval_status' => 'pending']);
         }
-        $this->assertDatabaseCount('users', 0);
+        $this->assertDatabaseCount('users', 2);
     }
 }

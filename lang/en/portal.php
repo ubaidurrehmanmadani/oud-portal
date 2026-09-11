@@ -1,6 +1,15 @@
 <?php
 
 return [
+    'account_requests' => 'Account approval requests',
+    'account_privileged_notice' => 'Admin and Department Manager accounts require approval by an existing Admin before login.',
+    'account_request_saved' => 'Your account request has been submitted. An existing Admin must approve it before you can log in.',
+    'account_approval_required' => 'This account has not been approved for access. Please contact an Admin.',
+    'account_review_help' => 'Verify the applicant before approving access. Admin approval grants full system control. For managers, use Edit to assign the department; financial upload permission remains separate.',
+    'account_approve' => 'Approve account access',
+    'account_reject' => 'Reject request',
+    'account_no_requests' => 'No accounts are awaiting approval.',
+    'account_decision_saved' => 'Account approval decision saved.',
     'manager_all_types' => 'All content types',
     'manager_reports' => 'Financial submissions',
     'manager_workspace' => 'Department management',

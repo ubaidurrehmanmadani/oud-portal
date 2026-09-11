@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AccountApprovalController;
 use App\Http\Controllers\AccountManagementController;
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
@@ -70,6 +71,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/workspace/items/{item}/decision', [WorkspaceController::class, 'decide'])->whereNumber('item')->name('workspace.decide');
 
     Route::middleware('admin')->prefix('admin')->name('admin.')->group(function () {
+        Route::get('/users/account-requests', [AccountApprovalController::class, 'index'])->name('account-requests.index');
+        Route::post('/users/account-requests/{user}', [AccountApprovalController::class, 'decide'])->whereNumber('user')->name('account-requests.decide');
         Route::redirect('/', '/dashboard/admin')->name('home');
         Route::redirect('/dashboard', '/dashboard/admin')->name('dashboard');
         Route::redirect('/users', '/admin/users/view-users');

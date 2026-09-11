@@ -31,6 +31,13 @@ class AuthenticatedSessionController extends Controller
             ]);
         }
 
+        if (Auth::user()->approval_status !== 'approved') {
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+            throw ValidationException::withMessages(['email' => __('portal.account_approval_required')]);
+        }
+
         $request->session()->regenerate();
 
         /** @var User $user */

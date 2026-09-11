@@ -22,6 +22,8 @@ class User extends Authenticatable
 
     protected $hidden = ['password', 'remember_token'];
 
+    protected $attributes = ['approval_status' => 'approved'];
+
     public const ROLE_ADMIN = UserRole::ADMIN->value;
 
     public const ROLE_DEPARTMENT_MANAGER = UserRole::DEPARTMENT_MANAGER->value;

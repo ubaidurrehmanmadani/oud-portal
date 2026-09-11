@@ -21,6 +21,8 @@ Each role can have unlimited users. Access must be permission-based so users onl
 
 The system must be bilingual in English and Arabic.
 
+Public sign-up offers Admin, Department Manager, Employee and Landlord. Admin and Department Manager registrations require approval by an existing approved Admin before login or access to protected features. Admins can approve or reject these requests; the reviewer and decision time must be recorded. Existing accounts and accounts created by an Admin are unaffected. Department and financial-report permissions remain separately assigned by an Admin.
+
 ## Core Modules
 
 - Authentication and secure login

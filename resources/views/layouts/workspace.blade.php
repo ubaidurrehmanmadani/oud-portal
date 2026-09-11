@@ -35,6 +35,7 @@
                     <a class="{{ request()->routeIs('manager.reports.*') ? 'active' : '' }}" href="{{ route('manager.reports.index') }}">{{ __('portal.manager_reports') }}</a>
                 @endif
                 @if (auth()->user()->role === \App\Enums\UserRole::ADMIN)
+                    <a href="{{ route('admin.account-requests.index') }}">{{ __('portal.account_requests') }}</a>
                     @foreach (['users', 'permissions', 'departments', 'properties', 'documents', 'academy', 'reports', 'approvals', 'announcements', 'notifications', 'integrations', 'settings'] as $adminModule)
                         <a href="{{ route('admin.'.$adminModule.'.view') }}">{{ __('portal.'.($adminModule === 'academy' ? 'oud_academy' : $adminModule)) }}</a>
                     @endforeach

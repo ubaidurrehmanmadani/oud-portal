@@ -19,7 +19,7 @@ class RegisteredUserController extends Controller
     public function create(): View
     {
         return view('auth.register', [
-            'roles' => collect(User::roles())->only(['employee', 'landlord'])->all(),
+            'roles' => User::roles(),
         ]);
     }
 
@@ -28,16 +28,21 @@ class RegisteredUserController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:users,email'],
-            'role' => ['required', Rule::in([UserRole::EMPLOYEE->value, UserRole::LANDLORD->value])],
+            'role' => ['required', Rule::in(UserRole::values())],
             'password' => ['required', 'confirmed', Password::min(8)],
         ]);
 
         $role = Role::query()->where('code', $validated['role'])->first();
 
-        $user = User::create([
+        $user = new User([
             ...$validated,
             'role_id' => $role?->id,
         ]);
+
+        if (in_array($user->role, [UserRole::ADMIN, UserRole::DEPARTMENT_MANAGER], true)) {
+            $user->forceFill(['approval_status' => 'pending']);
+        }
+        $user->save();
 
         $user->profile()->create([
             'preferred_locale' => app()->getLocale(),
@@ -49,6 +54,10 @@ class RegisteredUserController extends Controller
             'ip_address' => $request->ip(),
             'user_agent' => $request->userAgent(),
         ]);
+
+        if ($user->approval_status === 'pending') {
+            return redirect()->route('login')->with('status', __('portal.account_request_saved'));
+        }
 
         Auth::login($user);
 
