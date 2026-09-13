@@ -59,7 +59,7 @@ Financial components include office, mezzanine, lobby/corridors, terrace, retail
 
 ## Account approval — 11 September 2026
 
-The local login page includes a branded demo-access card with four role accounts from `config/demo-access.php`. Each email and the shared demo password has click-to-copy feedback and accessible status announcements. Readiness checks verify stored role, approval and password. The card is never rendered outside the `local` environment; do not configure publicly accessible deployments as local or reuse these publicly documented demo passwords for real accounts. No production account provisioning is performed.
+The local login page includes a branded demo-access card with four role accounts from `config/demo-access.php`. Each email and the shared demo password has click-to-copy feedback and accessible status announcements. Readiness checks verify stored role, approval and password. The card is never rendered outside the `local` environment; do not configure publicly accessible deployments as local or reuse these publicly documented demo passwords for real accounts. The login card does not provision accounts; deployment seeding provisions the accounts described below.
 
 The requested local demo manager and employee belong to Property Management; the demo manager has financial submission permission and the manager/landlord are assigned the five demo properties. The landlord demo address intentionally uses `saad+landload@gmail.com` as requested; other existing landlord accounts are retained.
 
@@ -114,3 +114,11 @@ git diff --check
 ```
 
 Deploy application assets and `resources/reports/` with the code. Run migrations in the target environment; run the importer or the existing seeding deployment command only when initial content is needed. Keep local `.env` settings separate from Laravel Cloud configuration. Local test and browser results are not production verification.
+
+## Deployment accounts — 13 September 2026
+
+`DatabaseSeeder` now creates `admin@gmail.com`, `manager@gmail.com`, `landlord@gmail.com`, and `employee@gmail.com` with matching roles, approved status, profiles, and initial password `Test#12345` stored as a hash. Repeat seeding preserves these accounts and any changed credentials. Existing demo accounts remain. The landlord receives reference property assignments; manager department assignment and financial submission permission remain Admin-managed.
+
+Set the server deployment hook to `composer deploy`, which runs `migrate --force` followed by `db:seed --force`. The existing documented Laravel Cloud two-command hook is equivalent. SQLite deployments require a persistent writable database path in server environment settings; local environment settings are unchanged. No schema or Blade changes are required. Local SQLite regression checks cover role links, successful login for all four accounts, and password preservation on repeat seeding. Server deployment configuration and production execution are not verified locally.
+
+The desktop login layout uses a compact two-column demo account card and reduced heading/form spacing so the expanded local demo panel does not push login controls below a typical laptop viewport. Overrides are scoped to the login route; content remains reachable on smaller screens and at increased browser zoom rather than being clipped by hidden overflow.

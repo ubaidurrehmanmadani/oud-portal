@@ -29,6 +29,26 @@ class DatabaseSeeder extends Seeder
             );
         }
 
+        foreach ([
+            ['name' => 'Admin', 'email' => 'admin@gmail.com', 'role' => UserRole::ADMIN],
+            ['name' => 'Manager', 'email' => 'manager@gmail.com', 'role' => UserRole::DEPARTMENT_MANAGER],
+            ['name' => 'Landlord', 'email' => 'landlord@gmail.com', 'role' => UserRole::LANDLORD],
+            ['name' => 'Employee', 'email' => 'employee@gmail.com', 'role' => UserRole::EMPLOYEE],
+        ] as $account) {
+            $user = User::firstOrCreate(
+                ['email' => $account['email']],
+                [
+                    'name' => $account['name'],
+                    'role' => $account['role'],
+                    'role_id' => Role::where('code', $account['role']->value)->value('id'),
+                    'password' => Hash::make('Test#12345'),
+                    'email_verified_at' => now(),
+                    'approval_status' => 'approved',
+                ],
+            );
+            $user->profile()->firstOrCreate([], ['preferred_locale' => 'en']);
+        }
+
         $demoPassword = env('DEMO_USER_PASSWORD', 'Test#12345');
         foreach ([
             ['name' => 'Ubaid Landlord', 'email' => 'ubaid+landlord@gmail.com', 'role' => UserRole::LANDLORD],

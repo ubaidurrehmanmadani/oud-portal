@@ -7,6 +7,7 @@ use App\Models\Role;
 use App\Models\User;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
@@ -25,7 +26,7 @@ class DatabaseSeederTest extends TestCase
         $this->artisan('db:seed', ['--class' => DatabaseSeeder::class, '--force' => true])->assertSuccessful();
         $this->artisan('db:seed', ['--class' => DatabaseSeeder::class, '--force' => true])->assertSuccessful();
 
-        $this->assertDatabaseCount('users', 3);
+        $this->assertDatabaseCount('users', 7);
         $this->assertSame($original, $user->fresh()->getAttributes());
         $this->assertDatabaseCount('roles', count(UserRole::cases()));
         $this->assertDatabaseHas('users', ['email' => 'ubaid+landlord@gmail.com', 'role' => UserRole::LANDLORD->value]);
@@ -37,8 +38,39 @@ class DatabaseSeederTest extends TestCase
     {
         $this->artisan('db:seed', ['--class' => DatabaseSeeder::class, '--force' => true])->assertSuccessful();
 
-        $this->assertDatabaseCount('users', 2);
+        $this->assertDatabaseCount('users', 6);
         $this->assertDatabaseCount('roles', count(UserRole::cases()));
+    }
+
+    public function test_deployment_accounts_can_login_and_reseeding_preserves_password_changes(): void
+    {
+        Storage::fake('local');
+        $this->seed(DatabaseSeeder::class);
+
+        foreach ([
+            'admin@gmail.com' => UserRole::ADMIN,
+            'manager@gmail.com' => UserRole::DEPARTMENT_MANAGER,
+            'landlord@gmail.com' => UserRole::LANDLORD,
+            'employee@gmail.com' => UserRole::EMPLOYEE,
+        ] as $email => $role) {
+            $user = User::where('email', $email)->firstOrFail();
+            $this->assertSame($role, $user->role);
+            $this->assertSame($role, $user->accountRole->code);
+            $this->assertSame('approved', $user->approval_status);
+            $this->assertNotNull($user->profile);
+            $this->assertTrue(Hash::check('Test#12345', $user->password));
+            $this->post('/login', ['email' => $email, 'password' => 'Test#12345'])
+                ->assertRedirect(route($role->dashboardRouteName(), absolute: false));
+            $this->assertAuthenticatedAs($user);
+            $this->post('/logout');
+            $user->update(['password' => 'Changed#67890']);
+        }
+
+        $this->seed(DatabaseSeeder::class);
+        $this->assertDatabaseCount('users', 6);
+        foreach (['admin', 'manager', 'landlord', 'employee'] as $name) {
+            $this->assertTrue(Hash::check('Changed#67890', User::where('email', $name.'@gmail.com')->firstOrFail()->password));
+        }
     }
 
     public function test_existing_landlords_receive_the_reference_workspace_data(): void

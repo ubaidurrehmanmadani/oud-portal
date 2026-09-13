@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Aboreto&family=Noto+Sans+Arabic:wght@400;500;600;700;800&family=Poppins:wght@400;500;600;700;800&display=swap">
 </head>
 <body data-show-password="{{ __('workspace.show_password') }}" data-hide-password="{{ __('workspace.hide_password') }}">
-    <main class="auth-shell">
+    <main class="auth-shell {{ request()->routeIs('login') ? 'auth-shell-login' : '' }}">
         <section class="brand-panel">
             <img src="{{ asset('oud/assets/oud-logo.png') }}" alt="OUD Real Estate" class="auth-brand-logo">
             <div class="brand-copy">

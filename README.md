@@ -80,7 +80,7 @@ The Laravel framework is open-sourced software licensed under the [MIT license](
 
 ## Production database seeding
 
-`php artisan db:seed --force` seeds application roles, the demo landlord and employee accounts, and the reference landlord workspace data without Faker or user factories. It is idempotent and can be rerun safely. Set `DEMO_USER_PASSWORD` in Laravel Cloud to override the demo password.
+`php artisan db:seed --force` seeds application roles, the four deployment accounts below, the existing demo landlord and employee accounts, and the reference landlord workspace data without Faker or user factories. It is idempotent and can be rerun safely. Set `DEMO_USER_PASSWORD` in Laravel Cloud to override the demo password.
 
 If Laravel Cloud reports `Call to undefined function Database\Factories\fake()`, deploy the updated `database/seeders/DatabaseSeeder.php`, then rerun the command in the **production** environment:
 
@@ -100,3 +100,16 @@ php artisan db:seed --force
 ```
 
 These commands run automatically before each deployment goes live. Run `php artisan optimize:clear` manually from the Cloud **Commands** tab when changing environment variables or troubleshooting stale configuration; it should not be part of every deploy because Cloud recommends preserving the deployment cache during releases.
+
+## Deployment login accounts
+
+Configure the server deployment hook to run `composer deploy` (or the two Laravel Cloud deploy commands above) after dependencies are installed. This runs migrations and seeding automatically on each deployment against the configured database. For SQLite, set `DB_CONNECTION=sqlite` and `DB_DATABASE` to an absolute SQLite file path on persistent, writable server storage. Keep that database across releases.
+
+| Role | Email | Initial password |
+| --- | --- | --- |
+| Admin | admin@gmail.com | Test#12345 |
+| Department Manager | manager@gmail.com | Test#12345 |
+| Landlord | landlord@gmail.com | Test#12345 |
+| Employee | employee@gmail.com | Test#12345 |
+
+These accounts are created approved with hashed passwords and profiles. Existing accounts with these emails are preserved, including changed passwords and permissions. `DEMO_USER_PASSWORD` applies only to the older Ubaid demo accounts. The landlord receives the seeded property assignments; an Admin must assign the manager a department and any required reporting permissions through account management. Uploading files alone does not run seeders: the server deployment hook must be configured.
