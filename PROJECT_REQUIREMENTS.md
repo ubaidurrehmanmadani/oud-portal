@@ -21,6 +21,8 @@ Each role can have unlimited users. Access must be permission-based so users onl
 
 The system must be bilingual in English and Arabic.
 
+Public sign-up offers Admin, Department Manager, Employee and Landlord. Admin and Department Manager registrations require approval by an existing approved Admin before login or access to protected features. Admins can approve or reject these requests; the reviewer and decision time must be recorded. Existing accounts and accounts created by an Admin are unaffected. Department and financial-report permissions remain separately assigned by an Admin.
+
 ## Core Modules
 
 - Authentication and secure login
@@ -79,6 +81,8 @@ Department Managers cannot:
 - Access properties or landlord data.
 - Change system-wide settings.
 - Create or delete user accounts unless an Admin grants that permission.
+
+Financial-report submission exception: the Head of Property Management and Head of Hospitality Management use the Department Manager role with an explicit Admin-granted financial submission permission and assigned reporting properties. They may upload monthly Excel/PDF reports, enter management figures, save drafts and submit for review. This does not grant access to landlord records, other managers' submissions, property administration or publication rights. Reports remain private until the review and approval stage is completed.
 
 ### Employee
 

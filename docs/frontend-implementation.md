@@ -1,121 +1,116 @@
 # OUD frontend implementation
 
-## Scope and status — 10 September 2026
+## Source of truth
 
-The project owner authorized adopting the screens in `OUD_project/`, including routes, controllers, database integration, and role permissions. The supplied reference folder remains unchanged so the frontend developer can replace it later.
+Authentication screens share a 40% left brand panel and 60% form panel on desktop, stacking on mobile. Login, sign-up, forgot-password and reset-password use identical bottom-left brand copy. The local login demo card stays open at the top-right beside the language switch, with copy controls always visible and no dropdown.
 
-Completed steps:
+Maintain the integrated Laravel application directly. Screens live in `resources/views/`, styles/images/JavaScript in `public/oud/`, translations in `lang/`, and workflows in `app/` and `routes/`. No separate design-folder synchronization step is required.
 
-1. Reviewed all 16 supplied HTML screens, their CSS, supporting JavaScript, and the existing application.
-2. Added database-backed departments, property assignments, workspace content, report metrics, and approval decisions.
-3. Adapted the four authentication screens while retaining Laravel authentication, validation, password reset, CSRF protection, and locale switching.
-4. Implemented the staff dashboard, document library, academy, announcements, and search.
-5. Implemented the landlord dashboard, property portfolio, reports, documents, approvals, and report/approval detail pages.
-6. Applied the shared design to admin pages; replaced sample rows with database records and connected content/account management forms.
-7. Verified authentication, access boundaries, saved actions, rendering, and the local MySQL migration; reviewed desktop and Arabic screenshots and checked mobile layouts.
+The 120 English/Arabic monthly report resources in `resources/reports/` retain the complete report main content, charts, source tables, notes and labelled demo profit/loss. `App\Support\ReferenceReports` reads these application-owned resources for rendering and initial financial-data seeding. Include them in deployments. The shared Laravel layout supplies authentication, navigation, language switching and role guidance; report links are rewritten to authorized application routes.
 
-No separate admin or department manager designs are supplied. These roles use the shared design language with navigation and actions appropriate to their responsibilities.
+## Screen mapping
 
-## Screen and route mapping
+Only Admin navigation groups links into collapsible People & access, Properties & reporting, Content management, Staff workspace and System administration categories. All existing links remain available; other roles retain their original navigation. Categories start expanded and support keyboard activation in both locales.
 
-| Reference file in OUD_project | Application route | Implementation |
+Blade paths below are relative to `resources/views/`.
+
+| Screen | Route | Implementation |
 | --- | --- | --- |
-| `user_login.html` | `/login` | `auth/login.blade.php`, existing session controller |
-| `user_register.html` | `/sign-up` | `auth/register.blade.php`, registration controller |
-| `user_forgot-password.html` | `/forgot-password` | `auth/forgot-password.blade.php`, reset-link controller |
-| `user_reset-password.html` | `/reset-password/{token}` | `auth/reset-password.blade.php`, new-password controller |
-| `user_dashboard.html` | `/dashboard/employee`, `/dashboard/department-manager` | `WorkspaceController`, `workspace/dashboard.blade.php` |
-| `user_documents.html` | `/staff/documents` | `workspace/documents.blade.php` |
-| `user_training.html` | `/staff/training` | `workspace/training.blade.php` |
-| `user_announcements.html` | `/staff/announcements` | `workspace/announcements.blade.php` |
-| `user_search.html` | `/staff/search?q=...` | `workspace/search.blade.php` |
-| `landlord_dashboard.html` | `/dashboard/landlord?property={id}` | `workspace/dashboard.blade.php` |
-| `landlord_properties.html` | `/landlord/properties` | `workspace/properties.blade.php` |
-| `landlord_reports.html` | `/landlord/reports` | `workspace/reports.blade.php` |
-| `landlord_documents.html` | `/landlord/documents` | `workspace/documents.blade.php` |
-| `landlord_approvals.html` | `/landlord/approvals` | `workspace/approvals.blade.php` |
-| `landlord_report_detail.html` | `/workspace/items/{id}` for a report | `workspace/detail.blade.php` |
-| `landlord_approval_detail.html` | `/workspace/items/{id}` for an approval | `workspace/detail.blade.php` |
+| Authentication | `/login`, `/sign-up`, `/forgot-password`, `/reset-password/{token}` | `auth/`, Laravel authentication controllers |
+| Staff dashboards | `/dashboard/employee`, `/dashboard/department-manager` | `workspace/dashboard.blade.php` |
+| Staff content | `/staff/documents`, `/staff/training`, `/staff/announcements`, `/staff/search` | Corresponding `workspace/` views |
+| Landlord dashboard | `/dashboard/landlord` | `workspace/landlord-dashboard.blade.php` |
+| Landlord lists | `/landlord/properties`, `/landlord/reports`, `/landlord/documents`, `/landlord/approvals` | Corresponding `workspace/` views and shared listing |
+| Report/approval details | `/workspace/items/{id}` | `workspace/detail.blade.php` |
+| Monthly financial report | `/landlord/properties/{id}/financials?year=2027&month=1` | `workspace/reference-financial-report.blade.php` or `workspace/financial-report.blade.php` |
+| Admin financial preview | `/admin/properties/{id}/financials` | Same financial views, including authorized draft previews |
+| Content management | `/content`, `/content/create` | Role-scoped content forms and controllers |
+| Account/assignment editing | `/accounts/{user\|department\|property}/{id}/edit` | Admin account management |
+| Manager submissions | `/manager/reports` | `manager/reports.blade.php`, search, status filter and pagination |
+| Manager upload/draft/detail | `/manager/reports/upload`, `/manager/reports/{id}/edit` | `manager/upload-report.blade.php` |
 
-The shared shell is `resources/views/layouts/workspace.blade.php`. Staff and landlord lists share `workspace/listing.blade.php`. Existing admin URLs and explicit core create-page views remain available. Admin module list pages support database search and pagination.
+The shared shell is `layouts/workspace.blade.php`. Lists support applicable property, search, category, period and approval-status filters, sorting, reset and pagination. Report details include sections and downloads. Approval details include request metadata, supporting files and persisted decisions.
 
-Additional working routes:
+## Data and workflows
 
-- `/content`: admin/manager content management, including drafts.
-- `/content/create?kind=document|training|announcement|report|approval|user|department|property`: create forms, limited by role.
-- `POST /content`, `PUT /content/{id}`: validated writes and file replacement.
-- `/accounts/{user|department|property}/{id}/edit` and the corresponding `PUT` route: admin account and assignment updates.
-- `/workspace/items/{id}/download`: authorized private download.
-- `POST /workspace/items/{id}/decision`: landlord approval/rejection and optional comment, recorded transactionally with reviewer and timestamp.
+Run `php artisan migrate` when deploying schema changes. Relevant migrations:
 
-## Database connection and migration
+- `2026_09_10_120000_create_workspace_tables.php`: departments, user department assignment, properties, landlord assignments and typed workspace content.
+- `2026_09_10_180000_add_financial_reporting_to_workspace_items.php`: nullable report month, financial data and unique property/month index.
 
-The configured local connection is the existing XAMPP MySQL database `oud`. Its connection settings and credentials were retained. The connection was verified and migration `2026_09_10_120000_create_workspace_tables.php` was applied successfully. Existing user records were preserved; no sample business records were inserted into MySQL.
+All models use Laravel's configured database connection. Existing accounts, records and assignments must be preserved.
 
-New schema:
+`php artisan oud:import-reference-content` imports five properties, 60 monthly financial records, six general reports, three documents and six approval requests. It assigns these properties to existing landlords without detaching other assignments or changing credentials. Repeat imports preserve existing records, uploaded files and final approval decisions. Normal `db:seed` also invokes this importer.
 
-- `departments`: department names and descriptions.
-- `users.department_id`: nullable assignment, allowing existing accounts to remain valid.
-- `properties`: property name, location, type, unit count, status, and description.
-- `property_user`: many-to-many landlord/property assignments.
-- `workspace_items`: typed documents, training materials, announcements, reports, and approval requests. Includes audience, department/property scope, publication status/date, private file metadata, report metrics, and decision audit fields.
+The dashboard shows assigned-property summaries. Imported reports retain their bundled EN/AR content. Editing an imported financial report through **Manage content** removes its reference marker and uses the editable database-backed financial view. Administrators can create additional monthly or general reports, set publication status and attach files. Duplicate property/month records are rejected.
 
-All models use Laravel's configured connection; there is no separate frontend connection. Deployments need to run `php artisan migrate`. Automated tests use an isolated in-memory SQLite database and do not alter local MySQL records.
+Financial components include office, mezzanine, lobby/corridors, terrace, retail and outdoor. Blank values remain missing; explicit zeros are retained. Calculations sum component rents and service charges once. Collection rate requires positive rent due. Source tables, cell references, annual summaries and discrepancies are retained independently of calculations. Forecast revenue is not represented as net profit; demo P&L remains explicitly labelled.
 
-Uploaded files are stored on Laravel's private `local` disk under `workspace/`. Downloads recheck authorization. A public storage link is not required. Supported uploads are limited to the configured document, image, video, archive, and text formats, up to 50 MB; PHP/web-server upload limits must also permit the intended file size.
+## Access and persistence
 
-## Access and content rules
+- Dashboards require the matching role.
+- Staff see published general or department-assigned staff content; drafts and future publications are hidden.
+- Department managers require a department assignment and can manage only their department's supported content.
+- Landlords see only published landlord content for assigned properties. Filters, financial routes, details, downloads and decisions recheck access.
+- Administrators manage content, accounts, departments and property assignments.
+- Public registration offers all four roles. Admin and Department Manager applicants are saved as pending, remain logged out and cannot access protected routes until an existing approved Admin approves them. Employee and Landlord registration is unchanged.
+- Approval decisions record reviewer, timestamp and optional comment transactionally. Repeated decisions return HTTP 409; decided requests cannot be edited.
+- Uploads use the private local disk under `workspace/`; `/workspace/items/{id}/download` rechecks authorization. A public storage link is not required.
 
-- Each dashboard requires its matching role.
-- Staff see published general staff content and published content assigned to their department. Drafts and future publications are hidden.
-- Department managers need a department assignment to manage content. Their writes are restricted to that department's documents, training, and announcements; submitted foreign department/property IDs cannot expand their scope.
-- Landlords see only landlord-audience records for assigned properties. Property filters, direct detail URLs, downloads, and decisions all enforce this scope.
-- Admins can manage all workspace content, create/edit users and departments, and assign landlords to properties.
-- Public registration offers employee and landlord roles. Admin and manager accounts must be created by an administrator.
-- Approval decisions are final in this workflow. A repeated decision returns HTTP 409. Decided requests cannot be edited through content management.
-- Static reference demo records, simulated login, and client-side decision scripts are not loaded into the application.
+## Account approval — 11 September 2026
 
-To populate an existing installation, use an admin account to create departments and properties, edit existing users to assign their departments/properties, then publish content through **Manage content**. Unassigned managers cannot publish; unassigned landlords see an empty portfolio.
+The local login page includes a branded demo-access card with four role accounts from `config/demo-access.php`. Each email and the shared demo password has click-to-copy feedback and accessible status announcements. Readiness checks verify stored role, approval and password. The card is never rendered outside the `local` environment; do not configure publicly accessible deployments as local or reuse these publicly documented demo passwords for real accounts. No production account provisioning is performed.
 
-## Design assets and future updates
+The requested local demo manager and employee belong to Property Management; the demo manager has financial submission permission and the manager/landlord are assigned the five demo properties. The landlord demo address intentionally uses `saad+landload@gmail.com` as requested; other existing landlord accounts are retained.
 
-`public/oud/styles.css` is copied from the supplied CSS. Reference imagery is copied to `public/oud/assets/`. Laravel-specific compatibility, responsive fixes, and font fallbacks live in `public/oud/application.css`. `public/oud/password-eye.js` supplies accessible localized password visibility controls. English and Arabic workspace labels live in `lang/en/workspace.php` and `lang/ar/workspace.php`.
+Migration `2026_09_11_150000_add_account_approval_to_users.php` adds approval status, reviewer and decision timestamp. Existing and Admin-created accounts default to approved. Public privileged registrations explicitly set pending before insertion; submitted approval/permission fields are ignored. Both login and web middleware enforce approval, including already-authenticated pending sessions.
 
-Landlord list screens use one shared action convention: row content expands on the left and every action stays in a right-side cluster. View and Review use the dark primary pill, Download uses the outlined neutral variant, and Approve uses the olive success variant. This applies consistently to Properties, Reports, Documents, and Approvals and remains responsive by moving the action cluster below the row content on narrow screens.
+Admins use **Account approval requests** (`/admin/users/account-requests`) to inspect applicants, edit department assignments and approve or reject access. Decisions are transactionally locked, reject self-approval and repeat decisions, and write audit records. Rejected accounts remain blocked. Approving a manager does not grant financial upload permission. Email notification delivery is not implemented; applicants return to login after approval. Local regression coverage: **48 tests / 2,179 assertions**.
 
-Secure portal GET navigation is progressively enhanced in `public/oud/application.js`: internal screen links fetch the next rendered page and replace only `[data-page-content]`, update the page title and active sidebar link, and preserve the sidebar/topbar DOM. Direct navigation remains the fallback when JavaScript is unavailable, a download is requested, or the session expires.
+## Manager workflow — 11 September 2026
 
-When the owner supplies a new reference folder:
+- Department Managers have dashboard shortcuts to create documents, training and announcements, plus content management. Existing private department libraries, search, download, publication and replacement remain available. Content management now has search/type/status filters and a two-stage removal control; removal deletes the attachment and rechecks department scope.
+- Run migration `2026_09_11_120000_create_manager_report_submissions.php`. It adds a default-off user permission, private `report_submissions` records and `audit_events` for content saves/removal and financial draft/submission actions. Authentication audit records remain separate.
+- An Admin enables **Allow financial report submissions** on an existing user's edit screen, selects **Department Manager**, assigns a department, and selects reporting properties. Reserve this permission for the Head of Property Management and Head of Hospitality Management. It is not granted automatically to department managers or based on department names. No existing account permissions are changed by the migration.
+- Authorized managers can upload XLSX/XLS/PDF files up to 20 MB, select an assigned property and month, add optional manual occupancy/revenue/rent figures and notes, save/replace a draft, download it privately and submit for review. One submission per manager/property/month prevents accidental duplicates. Pending submissions are locked; other managers, employees and landlords cannot open or download them. Revoking the permission, department or property assignment revokes access.
+- Uploads are stored privately under `report-submissions/`. File type/extension/size and ownership checks run server-side. The submitted original, month, author, department, figures and timestamp are retained. Submissions are separate from published workspace reports, so uploads cannot change landlord dashboards.
+- This step implements the manager-side submission workflow, not automatic Excel parsing or the Admin approval/publication screen. The UI explicitly states that spreadsheet figures are not extracted. Pending submissions remain private until the review/publication step is implemented. Template-to-cell mapping, reviewer corrections/rejection/resubmission and email delivery remain follow-up work; no notification delivery is claimed.
+- Managers still cannot administer accounts, change system settings or view landlord records. The optional requirement for Admin-granted user-account administration is not implemented as part of the financial submission permission.
+- Local automated verification: **45 tests / 2,123 assertions**, covering private upload/replacement, validation, duplicate months, permissions, assignment revocation, submission locking, department deletion and existing application regressions.
+- The migration was applied to local MySQL without changing existing account permissions. Headless Chrome verified manager navigation, a real file upload, draft save, submission locking, and English/Arabic desktop/mobile layouts against an isolated SQLite database. Blade compilation and formatting passed. Laravel Cloud still requires deployment and migration; these are local checks only.
 
-1. Compare the updated HTML, CSS, and prototype JavaScript with the integrated screens.
-2. Run `php artisan oud:sync-design-assets` to copy the current CSS and assets. This preserves application-specific CSS/JS and does not import demo scripts.
-3. Update Blade layouts, page structure, translations, and server actions as required by the revised design.
-4. Add migrations only when new persisted data is needed; preserve existing records and assignments.
-5. Run `php artisan test`, format changed PHP, and check desktop/mobile and both locales.
+## Styles and interactions
 
-The source requests Optima/Poppins and Swissra typography, but does not include font files. Available system/web fonts are used with readable fallbacks. Poppins and Noto Sans Arabic are requested from Google Fonts.
+Maintain the five shared stylesheets, `application.css`, `application.js`, `password-eye.js` and images directly in `public/oud/`. Financial styles are enabled only on financial pages. Application CSS includes responsive, RTL and print adaptations.
 
-## Deliberate limits
+Application JavaScript progressively enhances internal GET navigation while preserving the sidebar/topbar. Direct navigation remains the fallback for unavailable JavaScript, downloads and expired sessions. Role dialogs support Escape/backdrop dismissal and focus restoration. Password controls provide localized accessible labels.
 
-- The reference's invented KPI values and decorative trend chart are not treated as business data. The dashboard displays the latest published report's metrics and a real occupancy meter; missing figures display an empty state. Exact figures remain on report details; large dashboard revenue figures are abbreviated.
-- Notification delivery and external/Odoo synchronization were not configured in the existing application. Their admin pages now show an unconfigured state instead of sample activity. No external integration or notification delivery is claimed.
-- Runtime settings remain deployment/environment configuration; the settings screen shows actual non-secret values. Permissions display the stored roles/permissions, while application role and assignment checks govern the implemented workflow. Former placeholder setup URLs for these modules lead to their status pages.
-- This is an integration of supplied frontend screens and their core workflows, not an implementation of unspecified external services, custom permission overrides, property photo management, or historical KPI ingestion.
+Property financial pages use the full available body width beside the sidebar, without a fixed desktop content-width cap. Responsive padding and internally scrolling tables are retained for both locales.
+Property sidebar links use flex alignment to keep their labels vertically centered on desktop and mobile in both locales.
+All authentication and workspace pages use the shared language-switcher partial: one joined pill with an olive active segment, cream background, bronze inactive label and desert outline. English stays on the left and Arabic on the right in both locales; keyboard focus and pressed state are exposed accessibly.
+Text inputs and selects share the sign-up field styling (54px height, 8px corners, cream fill and desert border), including branded focus and autofill states. Textareas keep their larger height; checkboxes/radios use an olive accent without inheriting text-field dimensions. Login-specific brand copy uses dedicated translations.
 
-## Verification
+For future changes, update the relevant integrated views/assets and server actions together, preserve role and assignment checks, and add migrations only for new persisted data. Check both locales, desktop/mobile layout, filters and saved workflows.
 
-`php artisan test`: 25 tests and 440 assertions passing after the final changes. Tests cover authentication, EN/AR rendering, all dashboard role combinations, staff/landlord routes, cross-department/property isolation, private downloads, upload persistence, management forms, assignments, invalid input, registration privilege restrictions, and repeated approval decisions.
+## Material limitations
 
-Headless Chrome screenshots use isolated test records, not production data. Desktop authentication/staff, Arabic landlord, and mobile views were reviewed. All 19 rendered pages passed a 390-pixel viewport check with document width equal to viewport width; navigation and wide document tables scroll within their own containers. The local MySQL migration was executed successfully without replacing the existing database.
+- Original binary contracts, proposals and the source workbook were not supplied. Bundled text is exported into valid, clearly labelled PDF/XLSX previews, not represented as original attachments. Administrator-uploaded files are retained.
+- Optima/Swissra font files are not bundled. Readable fallbacks are available; Poppins and Noto Sans Arabic are requested from Google Fonts.
+- External/Odoo synchronization and notification delivery are not configured. Status pages do not claim these services are active.
+- General custom permission overrides and Admin financial review/publication are not implemented. The manager-specific financial submission grant is implemented as described above.
 
-Final checks: changed PHP formatted with Laravel Pint; Blade templates compiled successfully; `git diff --check` passed; `oud:sync-design-assets` ran successfully. The supplied `OUD_project/` files have no unstaged changes from this implementation.
+## Verification and deployment
 
-## Production seeding correction
+Local automated coverage includes authentication, roles, assignment isolation, publication, uploads/downloads, filters, saved decisions, repeated imports, financial calculations and all 120 property/month/locale report variants. Tests use an isolated SQLite database, not production data.
 
-The Laravel Cloud production screenshot showed `Database\Factories\fake()` unavailable during `db:seed --force`. The default seeder used a user factory that depended on development-only Faker. The seeder now inserts missing application roles directly and creates no demo accounts. Existing accounts and customized roles remain unchanged on reruns. The fix was checked locally with Faker excluded from autoloading and an isolated SQLite database; it has not been deployed or verified against production. Local `.env` was unchanged. After deployment, rerun `php artisan db:seed --force` in Laravel Cloud production.
+On 11 September 2026, after consolidating report resources into the application, all **40 tests / 2,058 assertions** passed. All 120 report main sections were checked for exact preservation; shared stylesheets and images remained unchanged. Laravel Pint, Blade compilation and diff whitespace checks passed locally.
 
-### PHP 8.2 / Laravel 12 compatibility (2026-09-10)
+Before deployment, run:
 
-Authentication models use `$fillable` and `$hidden` properties in place of unsupported Eloquent attributes after the Laravel downgrade. This restores registration, role/profile/login-event creation, and password/token hiding during serialization. No migration or `.env` change is required. Clear compiled views and configuration after downgrading (`php artisan view:clear` and `php artisan config:clear`) to remove stale exception templates.
+```bash
+php artisan test
+php artisan view:cache
+git diff --check
+```
 
-Local verification uses `/usr/local/opt/php@8.2/bin/php` (8.2.29); the default `php` command currently runs 8.4.8. Authentication and workspace tests use an isolated SQLite database, not the local MySQL database or production. The browser server at port 8000 was unavailable during verification.
+Deploy application assets and `resources/reports/` with the code. Run migrations in the target environment; run the importer or the existing seeding deployment command only when initial content is needed. Keep local `.env` settings separate from Laravel Cloud configuration. Local test and browser results are not production verification.

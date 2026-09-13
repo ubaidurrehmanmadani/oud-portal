@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'report_type' => 'Report type', 'report_contents' => 'Report contents', 'included_sections' => 'Included sections', 'available_file' => 'Available file', 'download_report' => 'Download report', 'request_details' => 'Request details', 'request_type' => 'Request type', 'submitted_by' => 'Submitted by', 'supporting_document' => 'Supporting document',
+    'section_occupancy' => 'Occupancy and leasing performance', 'section_revenue' => 'Gross and net revenue summary', 'section_maintenance' => 'Maintenance and operational notes', 'section_market' => 'Market and property observations',
+    'pagination' => 'Pagination',
+    'all_categories' => 'All categories', 'sort' => 'Sort by', 'newest' => 'Newest first', 'oldest' => 'Oldest first', 'reset_filters' => 'Clear filters',
     'workspace' => 'Your workspace',
     'dashboard' => 'Dashboard',
     'documents' => 'Documents',
@@ -128,5 +132,5 @@ return [
     'register_brand' => 'Access designed around your role.',
     'forgot_brand' => 'Secure access, thoughtfully restored.',
     'reset_brand' => 'A considered way back in.',
-    'login_brand' => 'One secure portal for staff, departments, and landlords.',
+    'login_brand' => 'Employees & Landlord portal',
 ];

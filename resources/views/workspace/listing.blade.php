@@ -1,6 +1,7 @@
 @extends('layouts.workspace')
 @section('content')
 <section class="hero {{ $isLandlord ? 'landlord-hero' : '' }}"><div><p class="eyebrow">{{ $isLandlord ? __('workspace.'.$section.'_eyebrow') : __('workspace.workspace') }}</p><h1>{{ $isLandlord ? __('workspace.'.$section.'_page_title') : __('workspace.'.$section.'_heading') }}</h1><p>{{ $isLandlord ? __('workspace.'.$section.'_page_intro') : __('workspace.'.$section.'_intro') }}</p></div></section>
+@if ($isLandlord)@include('workspace.landlord-filters')@endif
 @if (!$isLandlord)<form method="GET" class="workspace-filters" role="search">
     @if ($selectedProperty)<input type="hidden" name="property" value="{{ $selectedProperty->id }}">@endif
     <label for="q">{{ __('workspace.search') }}</label><input id="q" type="search" name="q" value="{{ request('q') }}" placeholder="{{ __('workspace.search_placeholder') }}" maxlength="200">

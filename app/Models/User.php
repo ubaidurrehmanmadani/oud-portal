@@ -22,6 +22,8 @@ class User extends Authenticatable
 
     protected $hidden = ['password', 'remember_token'];
 
+    protected $attributes = ['approval_status' => 'approved'];
+
     public const ROLE_ADMIN = UserRole::ADMIN->value;
 
     public const ROLE_DEPARTMENT_MANAGER = UserRole::DEPARTMENT_MANAGER->value;
@@ -60,6 +62,11 @@ class User extends Authenticatable
         return $this->belongsToMany(Property::class);
     }
 
+    public function canSubmitFinancialReports(): bool
+    {
+        return $this->role === UserRole::DEPARTMENT_MANAGER && $this->department_id && $this->can_submit_financial_reports;
+    }
+
     public function profile(): HasOne
     {
         return $this->hasOne(UserProfile::class);
@@ -82,6 +89,7 @@ class User extends Authenticatable
             'last_login_at' => 'datetime',
             'password' => 'hashed',
             'role' => UserRole::class,
+            'can_submit_financial_reports' => 'boolean',
         ];
     }
 }

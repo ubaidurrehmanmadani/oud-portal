@@ -1,5 +1,8 @@
 @extends('layouts.workspace')
 @section('content')
+@if (auth()->user()->role === \App\Enums\UserRole::DEPARTMENT_MANAGER)
+    @include('manager.quick-actions')
+@endif
 <section class="hero {{ $isLandlord ? 'landlord-hero' : '' }}">
     <div><p class="eyebrow">{{ __('portal.brand_eyebrow') }}</p><h1>{{ $isLandlord ? ($selectedProperty?->name ?? __('workspace.properties')) : __('workspace.welcome') }}</h1><p>{{ __('workspace.'.($isLandlord ? 'landlord_intro' : 'staff_intro')) }}</p></div>
 </section>

@@ -29,6 +29,7 @@
                     <option value="{{ $value }}" @selected(old('role', 'employee') === $value)>{{ $label }}</option>
                 @endforeach
             </select>
+            <p class="muted">{{ __('portal.account_privileged_notice') }}</p>
         </div>
 
         <div class="field">

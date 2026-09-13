@@ -117,11 +117,11 @@ class DatabaseSeeder extends Seeder
             ['title' => 'Retail signage request', 'property_id' => $square->id, 'amount' => 18000, 'period' => 'Submitted 6 days ago', 'body' => 'Retail signage request awaiting review.'],
             ['title' => 'Construction milestone review', 'property_id' => $dunes->id, 'amount' => 210000, 'period' => 'Submitted 9 days ago', 'body' => 'Construction milestone review and payment request.'],
         ] as $approval) {
-            WorkspaceItem::updateOrCreate(
+            WorkspaceItem::firstOrCreate(
                 ['kind' => 'approval', 'title' => $approval['title'], 'property_id' => $approval['property_id']],
                 $approval + ['audience' => 'landlord', 'status' => 'pending', 'published_at' => now()],
             );
         }
+        $this->call(ReferenceWorkspaceSeeder::class);
     }
 }
-

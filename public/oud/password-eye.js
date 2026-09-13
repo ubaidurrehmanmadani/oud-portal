@@ -9,3 +9,39 @@ document.querySelectorAll('.password-toggle').forEach(button => {
         button.textContent = label;
     });
 });
+
+document.querySelectorAll('[data-demo-access]').forEach(panel => {
+    const toast = panel.querySelector('.demo-copy-toast');
+    let timeout;
+    panel.querySelectorAll('[data-copy-value]').forEach(button => {
+        button.addEventListener('click', async () => {
+            let copied = false;
+            try {
+                await navigator.clipboard.writeText(button.dataset.copyValue);
+                copied = true;
+            } catch {
+                const field = document.createElement('textarea');
+                field.value = button.dataset.copyValue;
+                field.style.position = 'fixed';
+                field.style.opacity = '0';
+                document.body.append(field);
+                field.select();
+                try {
+                    copied = document.execCommand('copy');
+                } catch {
+                    copied = false;
+                } finally {
+                    field.remove();
+                    button.focus();
+                }
+            }
+            clearTimeout(timeout);
+            toast.textContent = copied ? panel.dataset.copySuccess : panel.dataset.copyFailure;
+            toast.classList.add('is-visible');
+            timeout = setTimeout(() => {
+                toast.classList.remove('is-visible');
+                toast.textContent = '';
+            }, 2200);
+        });
+    });
+});

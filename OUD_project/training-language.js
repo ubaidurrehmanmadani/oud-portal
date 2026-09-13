@@ -1,7 +1,0 @@
-(function () {
-  const map = {
-    'Learning & development': 'التعلم والتطوير', 'Oud Academy': 'أكاديمية عود', 'Training library': 'مكتبة التدريب', 'Keep learning.': 'استمر في التعلم.', 'Access training files for your role, health, safety, and everyday operations.': 'ادخل إلى مواد التدريب الخاصة بدورك والصحة والسلامة والعمليات اليومية.', 'Required': 'إلزامي', 'Hospitality': 'الضيافة', 'Reference': 'مرجع', 'Workplace health & safety': 'الصحة والسلامة في بيئة العمل', 'Guest experience essentials': 'أساسيات تجربة الضيوف', 'Emergency response guide': 'دليل الاستجابة للطوارئ', 'PDF · 8 modules · Updated this month': 'PDF · 8 وحدات · تم التحديث هذا الشهر', 'PDF · 5 modules · Updated this month': 'PDF · 5 وحدات · تم التحديث هذا الشهر', 'PDF · Updated yesterday': 'PDF · تم التحديث أمس', 'Open training →': 'فتح التدريب ←', 'Download guide →': 'تحميل الدليل ←'
-  };
-  function apply() { if (localStorage.getItem('oud-lang') !== 'ar') return; document.querySelectorAll('body *:not(script):not(style)').forEach((element) => { if (element.children.length) return; const text = element.textContent.trim(); if (map[text]) element.textContent = map[text]; }); document.querySelectorAll('.video-badge').forEach((badge) => { const duration = badge.textContent.match(/\d+:\d+/)?.[0] || ''; badge.innerHTML = '<span class="video-play">▶</span> فيديو · ' + duration; }); }
-  document.addEventListener('click', (event) => { if (event.target.closest('[data-portal-lang]')) window.setTimeout(apply, 0); }); window.setTimeout(apply, 0);
-})();

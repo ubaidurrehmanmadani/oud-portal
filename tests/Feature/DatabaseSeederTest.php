@@ -48,10 +48,10 @@ class DatabaseSeederTest extends TestCase
 
         $this->artisan('db:seed', ['--class' => DatabaseSeeder::class, '--force' => true])->assertSuccessful();
 
-        $this->assertCount(3, $landlord->fresh()->properties);
+        $this->assertCount(5, $landlord->fresh()->properties);
         $this->assertDatabaseHas('workspace_items', ['kind' => 'report', 'title' => 'Monthly performance report']);
         $this->assertDatabaseHas('workspace_items', ['kind' => 'document', 'title' => 'OUD Reserve lease register']);
-        $this->assertDatabaseCount('workspace_items', 26);
+        $this->assertDatabaseCount('workspace_items', 86);
         Storage::disk('local')->assertExists('workspace/demo/oud-reserve-lease-register.pdf');
     }
 }
