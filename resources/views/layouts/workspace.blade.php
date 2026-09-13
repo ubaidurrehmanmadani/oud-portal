@@ -20,6 +20,9 @@
         <div><p class="nav-label">{{ $isLandlord ? __('financial.workspace') : __('workspace.workspace') }}</p>
             <nav class="nav" aria-label="{{ $isLandlord ? __('financial.property_reports') : __('workspace.workspace') }}">
                 <a class="{{ request()->routeIs('dashboard.*') ? 'active' : '' }}" href="{{ route(auth()->user()->dashboardRouteName()) }}">{{ __('workspace.dashboard') }}</a>
+                @if (auth()->user()->role === \App\Enums\UserRole::ADMIN)
+                    @include('partials.admin-navigation')
+                @else
                 @if ($isLandlord && $properties->isNotEmpty())
                     <div class="property-subnav" role="group" aria-label="{{ __('financial.property_reports') }}">
                         @foreach ($properties as $property)<a href="{{ route('landlord.financials', $property) }}" @if(request()->routeIs('landlord.financials') && $selectedProperty?->id === $property->id) aria-current="page" @endif>{{ $property->name }}</a>@endforeach
@@ -34,12 +37,6 @@
                 @if (auth()->user()->canSubmitFinancialReports())
                     <a class="{{ request()->routeIs('manager.reports.*') ? 'active' : '' }}" href="{{ route('manager.reports.index') }}">{{ __('portal.manager_reports') }}</a>
                 @endif
-                @if (auth()->user()->role === \App\Enums\UserRole::ADMIN)
-                    <a href="{{ route('admin.account-requests.index') }}">{{ __('portal.account_requests') }}</a>
-                    @foreach (['users', 'permissions', 'departments', 'properties', 'documents', 'academy', 'reports', 'approvals', 'announcements', 'notifications', 'integrations', 'settings'] as $adminModule)
-                        <a href="{{ route('admin.'.$adminModule.'.view') }}">{{ __('portal.'.($adminModule === 'academy' ? 'oud_academy' : $adminModule)) }}</a>
-                    @endforeach
-                    <a href="{{ route('admin.audit.view') }}">{{ __('portal.audit_logs') }}</a>
                 @endif
             </nav>
         </div>

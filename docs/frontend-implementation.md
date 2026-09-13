@@ -10,6 +10,8 @@ The 120 English/Arabic monthly report resources in `resources/reports/` retain t
 
 ## Screen mapping
 
+Only Admin navigation groups links into collapsible People & access, Properties & reporting, Content management, Staff workspace and System administration categories. All existing links remain available; other roles retain their original navigation. Categories start expanded and support keyboard activation in both locales.
+
 Blade paths below are relative to `resources/views/`.
 
 | Screen | Route | Implementation |

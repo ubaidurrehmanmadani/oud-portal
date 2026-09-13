@@ -1,6 +1,11 @@
 <?php
 
 return [
+    'nav_people' => 'People & access',
+    'nav_properties' => 'Properties & reporting',
+    'nav_content' => 'Content management',
+    'nav_workspace' => 'Staff workspace',
+    'nav_system' => 'System administration',
     'demo_access' => 'Demo access',
     'demo_hint' => 'Local testing only · click an email or password to copy.',
     'demo_ready' => 'Account ready',
