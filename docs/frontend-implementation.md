@@ -2,6 +2,8 @@
 
 ## Source of truth
 
+Authentication screens share a 40% left brand panel and 60% form panel on desktop, stacking on mobile. Login, sign-up, forgot-password and reset-password use identical bottom-left brand copy. The local login demo card stays open at the top-right beside the language switch, with copy controls always visible and no dropdown.
+
 Maintain the integrated Laravel application directly. Screens live in `resources/views/`, styles/images/JavaScript in `public/oud/`, translations in `lang/`, and workflows in `app/` and `routes/`. No separate design-folder synchronization step is required.
 
 The 120 English/Arabic monthly report resources in `resources/reports/` retain the complete report main content, charts, source tables, notes and labelled demo profit/loss. `App\Support\ReferenceReports` reads these application-owned resources for rendering and initial financial-data seeding. Include them in deployments. The shared Laravel layout supplies authentication, navigation, language switching and role guidance; report links are rewritten to authorized application routes.

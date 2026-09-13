@@ -11,11 +11,11 @@
 <body data-show-password="{{ __('workspace.show_password') }}" data-hide-password="{{ __('workspace.hide_password') }}">
     <main class="auth-shell">
         <section class="brand-panel">
+            <img src="{{ asset('oud/assets/oud-logo.png') }}" alt="OUD Real Estate" class="auth-brand-logo">
             <div class="brand-copy">
-                <img src="{{ asset('oud/assets/oud-logo.png') }}" alt="OUD Real Estate" class="auth-brand-logo">
-                <p class="eyebrow eyebrow-light">{{ __(request()->routeIs('login') ? 'portal.login_brand_eyebrow' : 'portal.brand_eyebrow') }}</p>
-                <h1 class="auth-brand-title">{{ __('workspace.'.match (true) { request()->routeIs('register') => 'register_brand', request()->routeIs('password.request') => 'forgot_brand', request()->routeIs('password.reset') => 'reset_brand', default => 'login_brand' }) }}</h1>
-                <p class="auth-brand-copy">{{ __(request()->routeIs('login') ? 'portal.login_brand_copy' : 'portal.brand_copy') }}</p>
+                <p class="eyebrow eyebrow-light">{{ __('portal.login_brand_eyebrow') }}</p>
+                <h1 class="auth-brand-title">{{ __('workspace.login_brand') }}</h1>
+                <p class="auth-brand-copy">{{ __('portal.login_brand_copy') }}</p>
             </div>
 
             <div class="feature-list">
@@ -31,10 +31,15 @@
         </section>
 
         <section class="auth-panel">
+            <div class="auth-toolbar">
+                @include('partials.language-switcher')
+                @if (app()->environment('local') && count($demoAccounts ?? []))
+                    <div class="auth-demo-menu">
+                        @include('auth.partials.demo-access')
+                    </div>
+                @endif
+            </div>
             <div class="auth-inner">
-                <div class="auth-form-switcher">
-                    @include('partials.language-switcher')
-                </div>
 
                 <div class="auth-mobile-heading">
                     <img src="{{ asset('oud/assets/oud-logo.png') }}" alt="OUD Real Estate" class="auth-mobile-logo">
