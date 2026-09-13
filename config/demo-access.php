@@ -1,11 +1,12 @@
 <?php
 
 return [
+    'enabled' => env('DEMO_ACCESS_ENABLED', true),
     'accounts' => [
-        'admin' => 'saad+admin@gmail.com',
-        'department_manager' => 'saad+manager@gmail.com',
-        'landlord' => 'saad+landload@gmail.com',
-        'employee' => 'saad+employee@gmail.com',
+        'admin' => 'admin@gmail.com',
+        'department_manager' => 'manager@gmail.com',
+        'landlord' => 'landlord@gmail.com',
+        'employee' => 'employee@gmail.com',
     ],
     'password' => 'Test#12345',
 ];

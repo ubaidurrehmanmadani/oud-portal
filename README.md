@@ -113,3 +113,5 @@ Configure the server deployment hook to run `composer deploy` (or the two Larave
 | Employee | employee@gmail.com | Test#12345 |
 
 These accounts are created approved with hashed passwords and profiles. Existing accounts with these emails are preserved, including changed passwords and permissions. `DEMO_USER_PASSWORD` applies only to the older Ubaid demo accounts. The landlord receives the seeded property assignments; an Admin must assign the manager a department and any required reporting permissions through account management. Uploading files alone does not run seeders: the server deployment hook must be configured.
+
+The login credentials card is temporarily enabled in production as well as locally. It shows the four deployment accounts above. To hide it later, set `DEMO_ACCESS_ENABLED=false` on the server and rebuild the configuration cache with `php artisan config:cache`. Keep `APP_ENV=production`.

@@ -33,7 +33,7 @@
         <section class="auth-panel">
             <div class="auth-toolbar">
                 @include('partials.language-switcher')
-                @if (app()->environment('local') && count($demoAccounts ?? []))
+                @if (config('demo-access.enabled') && count($demoAccounts ?? []))
                     <div class="auth-demo-menu">
                         @include('auth.partials.demo-access')
                     </div>

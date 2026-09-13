@@ -18,7 +18,7 @@ class AuthenticatedSessionController extends Controller
     public function create(): View
     {
         $demoAccounts = [];
-        if (app()->environment('local')) {
+        if (config('demo-access.enabled')) {
             $users = User::whereIn('email', config('demo-access.accounts'))->get()->keyBy('email');
             foreach (config('demo-access.accounts') as $role => $email) {
                 $user = $users->get($email);

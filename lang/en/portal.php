@@ -7,7 +7,7 @@ return [
     'nav_workspace' => 'Staff workspace',
     'nav_system' => 'System administration',
     'demo_access' => 'Demo access',
-    'demo_hint' => 'Local testing only · click an email or password to copy.',
+    'demo_hint' => 'Demo credentials · click an email or password to copy.',
     'demo_ready' => 'Account ready',
     'demo_unavailable' => 'Account not ready',
     'demo_copy' => 'Copy :value',

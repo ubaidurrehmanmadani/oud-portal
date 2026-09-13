@@ -2,7 +2,7 @@
 
 ## Source of truth
 
-Authentication screens share a 40% left brand panel and 60% form panel on desktop, stacking on mobile. Login, sign-up, forgot-password and reset-password use identical bottom-left brand copy. The local login demo card stays open at the top-right beside the language switch, with copy controls always visible and no dropdown.
+Authentication screens share a 40% left brand panel and 60% form panel on desktop, stacking on mobile. Login, sign-up, forgot-password and reset-password use identical bottom-left brand copy. The login demo card stays open at the top-right beside the language switch, with copy controls always visible and no dropdown.
 
 Maintain the integrated Laravel application directly. Screens live in `resources/views/`, styles/images/JavaScript in `public/oud/`, translations in `lang/`, and workflows in `app/` and `routes/`. No separate design-folder synchronization step is required.
 
@@ -59,7 +59,7 @@ Financial components include office, mezzanine, lobby/corridors, terrace, retail
 
 ## Account approval — 11 September 2026
 
-The local login page includes a branded demo-access card with four role accounts from `config/demo-access.php`. Each email and the shared demo password has click-to-copy feedback and accessible status announcements. Readiness checks verify stored role, approval and password. The card is never rendered outside the `local` environment; do not configure publicly accessible deployments as local or reuse these publicly documented demo passwords for real accounts. The login card does not provision accounts; deployment seeding provisions the accounts described below.
+The login page includes a branded demo-access card with four role accounts from `config/demo-access.php`. Each email and the shared demo password has click-to-copy feedback and accessible status announcements. Readiness checks verify stored role, approval and password. At the owner’s request, the card is temporarily enabled in all environments, including production, and displays the four deployment Gmail accounts. Set `DEMO_ACCESS_ENABLED=false` and rebuild the configuration cache to hide it later; keep production `APP_ENV=production`. The login card does not provision accounts; deployment seeding provisions the accounts described below.
 
 The requested local demo manager and employee belong to Property Management; the demo manager has financial submission permission and the manager/landlord are assigned the five demo properties. The landlord demo address intentionally uses `saad+landload@gmail.com` as requested; other existing landlord accounts are retained.
 
@@ -122,3 +122,5 @@ Deploy application assets and `resources/reports/` with the code. Run migrations
 Set the server deployment hook to `composer deploy`, which runs `migrate --force` followed by `db:seed --force`. The existing documented Laravel Cloud two-command hook is equivalent. SQLite deployments require a persistent writable database path in server environment settings; local environment settings are unchanged. No schema or Blade changes are required. Local SQLite regression checks cover role links, successful login for all four accounts, and password preservation on repeat seeding. Server deployment configuration and production execution are not verified locally.
 
 The desktop login layout uses a compact two-column demo account card and reduced heading/form spacing so the expanded local demo panel does not push login controls below a typical laptop viewport. Overrides are scoped to the login route; content remains reachable on smaller screens and at increased browser zoom rather than being clipped by hidden overflow.
+
+Production demo card visibility is covered locally with production environment rendering, seeded account readiness, English/Arabic copy, and the disable switch. This does not verify the deployed server.
