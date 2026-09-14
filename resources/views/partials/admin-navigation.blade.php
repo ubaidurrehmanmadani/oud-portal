@@ -9,6 +9,7 @@
         'nav_properties' => [
             ['admin.properties.view', 'portal.properties'],
             ['admin.reports.view', 'portal.reports'],
+            ['admin.report-reviews.index', 'review.title'],
             ['admin.approvals.view', 'portal.approvals'],
         ],
         'nav_content' => [

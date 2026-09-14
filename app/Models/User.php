@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Enums\UserRole;
+use App\Notifications\QueuedResetPassword;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -38,6 +39,11 @@ class User extends Authenticatable
     public static function roles(): array
     {
         return UserRole::options();
+    }
+
+    public function sendPasswordResetNotification($token): void
+    {
+        $this->notify(new QueuedResetPassword($token));
     }
 
     public function dashboardRouteName(): string
@@ -85,6 +91,7 @@ class User extends Authenticatable
     protected function casts(): array
     {
         return [
+            'suspended_at' => 'datetime',
             'email_verified_at' => 'datetime',
             'last_login_at' => 'datetime',
             'password' => 'hashed',

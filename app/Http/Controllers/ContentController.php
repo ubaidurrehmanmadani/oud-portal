@@ -3,9 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Enums\UserRole;
+use App\Jobs\DeleteUnreferencedUpload;
+use App\Jobs\NotifyWorkspacePublication;
+use App\Jobs\ProcessPrivateUpload;
 use App\Models\AuditEvent;
 use App\Models\Department;
 use App\Models\Property;
+use App\Models\ReportSubmission;
 use App\Models\Role;
 use App\Models\User;
 use App\Models\WorkspaceItem;
@@ -68,7 +72,7 @@ class ContentController extends Controller
             $record->delete();
         });
         if ($path) {
-            Storage::disk('local')->delete($path);
+            DeleteUnreferencedUpload::dispatch($path);
         }
 
         return redirect()->route('content.index')->with('status', __('workspace.saved'));
@@ -80,7 +84,7 @@ class ContentController extends Controller
         $kind = $request->validate(['kind' => ['required', Rule::in([...self::KINDS, 'department', 'property', 'user'])]])['kind'];
         if (in_array($kind, ['department', 'property', 'user'])) {
             abort_unless($request->user()->role === UserRole::ADMIN, 403);
-            $this->storeAccountData($request, $kind);
+            DB::transaction(fn () => $this->storeAccountData($request, $kind));
         } else {
             $this->saveItem($request, new WorkspaceItem, $kind);
         }
@@ -91,6 +95,7 @@ class ContentController extends Controller
     public function update(Request $request, int $item)
     {
         $record = $this->editable($request, $item);
+        abort_if(ReportSubmission::where('published_item_id', $record->id)->exists(), 409, __('review.immutable'));
         abort_if($record->kind === 'approval' && $record->status !== 'pending', 409);
         $this->saveItem($request, $record, $record->kind);
 
@@ -101,6 +106,9 @@ class ContentController extends Controller
     {
         $isAdmin = $request->user()->role === UserRole::ADMIN;
         abort_unless($isAdmin || in_array($kind, ['document', 'training', 'announcement']), 403);
+        if (! $isAdmin) {
+            abort_if($request->user()->department?->archived_at !== null, 403);
+        }
         $data = $request->validate([
             'title' => 'required|string|max:255', 'body' => 'nullable|string|max:50000', 'category' => 'nullable|string|max:100',
             'audience' => ['required', Rule::in($isAdmin ? ['staff', 'landlord', 'admin'] : ['staff'])],
@@ -130,13 +138,17 @@ class ContentController extends Controller
         }
         $newPath = null;
         $oldPath = $record->file_path;
+        $notifyPublication = ! $record->exists || $record->status === 'draft';
         if ($request->hasFile('file')) {
             $newPath = $request->file('file')->store('workspace', 'local');
             $data['file_path'] = $newPath;
+            $data['file_processing_required'] = true;
+            $data['file_processed_at'] = null;
+            $data['file_sha256'] = null;
             $data['file_name'] = basename($request->file('file')->getClientOriginalName());
         }
         try {
-            DB::transaction(function () use ($record, $data, $kind, $request) {
+            DB::transaction(function () use ($record, $data, $kind, $request, $notifyPublication) {
                 if ($record->exists) {
                     $locked = WorkspaceItem::lockForUpdate()->findOrFail($record->id);
                     abort_if($kind === 'approval' && $locked->status !== 'pending', 409);
@@ -147,6 +159,12 @@ class ContentController extends Controller
                     $record->created_by = $request->user()->id;
                 }
                 $record->save();
+                if ($record->file_processing_required && ! $record->file_processed_at) {
+                    ProcessPrivateUpload::dispatch('workspace', $record->id, $record->file_path);
+                }
+                if (! $record->file_processing_required && $notifyPublication && in_array($kind, ['document', 'report', 'approval']) && in_array($record->status, ['published', 'pending'])) {
+                    NotifyWorkspacePublication::dispatch($record->id)->delay($record->published_at ?? now());
+                }
                 AuditEvent::create(['user_id' => $request->user()->id, 'event' => 'content.saved:'.$record->id, 'ip_address' => $request->ip(), 'user_agent' => substr((string) $request->userAgent(), 0, 500)]);
             });
         } catch (\Throwable $error) {
@@ -159,30 +177,35 @@ class ContentController extends Controller
             throw $error;
         }
         if ($newPath && $oldPath) {
-            Storage::disk('local')->delete($oldPath);
+            DeleteUnreferencedUpload::dispatch($oldPath);
         }
     }
 
     private function storeAccountData(Request $request, string $kind): void
     {
         if ($kind === 'department') {
-            Department::create($request->validate(['name' => 'required|string|max:255', 'description' => 'nullable|string|max:5000']));
+            $record = Department::create($request->validate(['name' => 'required|string|max:255', 'description' => 'nullable|string|max:5000']));
         } elseif ($kind === 'property') {
             $data = $request->validate(['name' => 'required|string|max:255', 'location' => 'nullable|string|max:255', 'type' => 'nullable|string|max:255', 'description' => 'nullable|string|max:5000', 'total_units' => 'required|integer|min:0|max:1000000', 'landlords' => 'nullable|array', 'landlords.*' => ['integer', Rule::exists('users', 'id')->where('role', UserRole::LANDLORD->value)]]);
-            DB::transaction(function () use ($data) {
+            $record = DB::transaction(function () use ($data) {
                 $property = Property::create(collect($data)->except('landlords')->all());
                 $property->users()->sync($data['landlords'] ?? []);
+
+                return $property;
             });
         } else {
             $data = $request->validate(['name' => 'required|string|max:255', 'email' => 'required|email|max:255|unique:users,email', 'password' => 'required|string|min:8|max:255', 'role' => ['required', Rule::in(UserRole::values())], 'department_id' => 'nullable|exists:departments,id', 'properties' => 'nullable|array', 'properties.*' => 'integer|exists:properties,id']);
-            DB::transaction(function () use ($data) {
+            $record = DB::transaction(function () use ($data) {
                 $user = User::create(collect($data)->except('properties')->all() + ['role_id' => Role::where('code', $data['role'])->value('id')]);
                 $user->profile()->create(['preferred_locale' => app()->getLocale(), 'timezone' => 'Asia/Riyadh']);
                 if ($user->role === UserRole::LANDLORD) {
                     $user->properties()->sync($data['properties'] ?? []);
                 }
+
+                return $user;
             });
         }
+        AuditEvent::create(['user_id' => $request->user()->id, 'event' => 'account.'.$kind.'.created:'.$record->id, 'ip_address' => $request->ip(), 'user_agent' => substr((string) $request->userAgent(), 0, 500)]);
     }
 
     private function financialData(Request $request, WorkspaceItem $record): array

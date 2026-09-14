@@ -6,7 +6,7 @@ use App\Enums\UserRole;
 use App\Models\LoginEvent;
 use App\Models\Role;
 use App\Models\User;
-use Illuminate\Auth\Notifications\ResetPassword;
+use App\Notifications\QueuedResetPassword;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
@@ -94,7 +94,7 @@ class AuthenticationTest extends TestCase
             'email' => 'employee@example.com',
         ])->assertSessionHasNoErrors();
 
-        Notification::assertSentTo($user, ResetPassword::class);
+        Notification::assertSentTo($user, QueuedResetPassword::class);
     }
 
     public function test_users_can_switch_the_interface_language(): void

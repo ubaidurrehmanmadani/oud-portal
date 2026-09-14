@@ -1,16 +1,20 @@
 @extends('layouts.workspace')
 @section('content')
 <section class="hero"><div><p class="eyebrow">{{ __('portal.manager_workspace') }}</p><h1>{{ __('portal.manager_upload') }}</h1><p>{{ __('portal.manager_report_intro') }}</p></div></section>
+@if($record->file_processing_required && !$record->file_processed_at)<p class="card">{{ __('review.processing') }}</p>@endif
+@if($record->exists)
+<section class="card"><h2>{{ __('review.history') }}</h2>@foreach($record->reviews as $review)<p>{{ __('review.'.$review->decision) }} · {{ $review->created_at }}<br>{{ $review->comment }}</p>@endforeach</section>
+@endif
 <a class="text-link" href="{{ route('manager.reports.index') }}">{{ __('portal.manager_reports') }}</a>
 <ol class="manager-steps" aria-label="{{ __('portal.manager_workflow') }}">@foreach (['manager_step_upload', 'manager_step_check', 'manager_step_submit'] as $step)<li>{{ __('portal.'.$step) }}</li>@endforeach</ol>
 @if ($availableProperties->isEmpty())
     <section class="card"><h2>{{ __('portal.manager_no_properties') }}</h2><p>{{ __('portal.manager_no_properties_help') }}</p></section>
 @else
-    @if ($record->status === 'pending')<p class="card" role="status">{{ __('portal.manager_locked') }}</p>@endif
+    @if ($record->exists && !in_array($record->status, ['draft', 'returned']))<p class="card" role="status">{{ __('portal.manager_locked') }}</p>@endif
     <section class="card">
     <form method="POST" enctype="multipart/form-data" action="{{ $record->exists ? route('manager.reports.update', $record) : route('manager.reports.store') }}">
         @csrf @if ($record->exists) @method('PUT') @endif
-        <fieldset class="manager-fields content-form" @disabled($record->status === 'pending')>
+        <fieldset class="manager-fields content-form" @disabled($record->exists && !in_array($record->status, ['draft', 'returned']))>
             <legend>{{ __('portal.manager_report_details') }}</legend>
             <div class="field wide"><label for="title">{{ __('workspace.title') }}</label><input id="title" name="title" required maxlength="255" value="{{ old('title', $record->title) }}"></div>
             <div class="field"><label for="property_id">{{ __('workspace.property') }}</label><select id="property_id" name="property_id" required><option value="">{{ __('workspace.none') }}</option>@foreach ($availableProperties as $property)<option value="{{ $property->id }}" @selected(old('property_id', $record->property_id) == $property->id)>{{ $property->name }}</option>@endforeach</select></div>

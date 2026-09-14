@@ -9,7 +9,7 @@ class EnsureAccountApproved
 {
     public function handle(Request $request, Closure $next)
     {
-        if ($request->user() && $request->user()->approval_status !== 'approved' && ! $request->is('logout')) {
+        if ($request->user() && ($request->user()->approval_status !== 'approved' || $request->user()->suspended_at !== null) && ! $request->is('logout')) {
             abort(403, __('portal.account_approval_required'));
         }
 

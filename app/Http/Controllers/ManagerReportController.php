@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\DeleteUnreferencedUpload;
+use App\Jobs\ProcessPrivateUpload;
 use App\Models\AuditEvent;
 use App\Models\ReportSubmission;
 use Illuminate\Database\UniqueConstraintViolationException;
@@ -33,7 +35,7 @@ class ManagerReportController extends Controller
     public function index(Request $request)
     {
         $context = $this->context($request);
-        $filters = $request->validate(['q' => 'nullable|string|max:255', 'status' => ['nullable', Rule::in(['draft', 'pending'])]]);
+        $filters = $request->validate(['q' => 'nullable|string|max:255', 'status' => ['nullable', Rule::in(['draft', 'pending', 'returned', 'rejected', 'approved'])]]);
         $query = $this->query($request)->with('property');
         if ($filters['q'] ?? null) {
             $query->where('title', 'like', '%'.$filters['q'].'%');
@@ -68,10 +70,11 @@ class ManagerReportController extends Controller
     private function save(Request $request, ReportSubmission $record)
     {
         $context = $this->context($request);
-        abort_if($record->exists && $record->status !== 'draft', 409);
+        abort_if($request->user()->department?->archived_at !== null, 403);
+        abort_if($record->exists && ! in_array($record->status, ['draft', 'returned'], true), 409);
         $data = $request->validate([
             'title' => 'required|string|max:255',
-            'property_id' => ['required', 'integer', Rule::in($context['availableProperties']->modelKeys())],
+            'property_id' => ['required', 'integer', Rule::in($context['availableProperties']->whereNull('archived_at')->modelKeys())],
             'report_month' => 'required|date_format:Y-m',
             'notes' => 'nullable|string|max:10000',
             'action' => ['required', Rule::in(['draft', 'submit'])],
@@ -84,11 +87,12 @@ class ManagerReportController extends Controller
         ]);
         $newPath = $request->hasFile('file') ? $request->file('file')->store('report-submissions', 'local') : null;
         $oldPath = $record->file_path;
+        $retainOriginal = $record->exists && $record->reviews()->exists();
         try {
             DB::transaction(function () use ($request, $record, $data, $newPath) {
                 if ($record->exists) {
                     $locked = $this->query($request)->lockForUpdate()->findOrFail($record->id);
-                    abort_if($locked->status !== 'draft', 409);
+                    abort_if(! in_array($locked->status, ['draft', 'returned'], true), 409);
                 }
                 $record->fill(collect($data)->except(['file', 'action'])->all());
                 $record->report_month = $data['report_month'].'-01';
@@ -98,9 +102,15 @@ class ManagerReportController extends Controller
                 $record->submitted_at = $record->status === 'pending' ? now() : null;
                 if ($newPath) {
                     $record->file_path = $newPath;
+                    $record->file_processing_required = true;
+                    $record->file_processed_at = null;
+                    $record->file_sha256 = null;
                     $record->file_name = basename($request->file('file')->getClientOriginalName());
                 }
                 $record->save();
+                if ($record->file_processing_required && ! $record->file_processed_at) {
+                    ProcessPrivateUpload::dispatch('submission', $record->id, $record->file_path);
+                }
                 AuditEvent::create(['user_id' => $request->user()->id, 'event' => 'report_submission.'.$record->status.':'.$record->id, 'ip_address' => $request->ip(), 'user_agent' => substr((string) $request->userAgent(), 0, 500)]);
             });
         } catch (\Throwable $error) {
@@ -112,8 +122,8 @@ class ManagerReportController extends Controller
             }
             throw $error;
         }
-        if ($newPath && $oldPath) {
-            Storage::disk('local')->delete($oldPath);
+        if ($newPath && $oldPath && ! $retainOriginal) {
+            DeleteUnreferencedUpload::dispatch($oldPath);
         }
 
         return redirect()->route('manager.reports.index')->with('status', __('portal.manager_saved'));

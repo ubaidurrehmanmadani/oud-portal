@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AccountApprovalController;
+use App\Http\Controllers\AccountLifecycleController;
 use App\Http\Controllers\AccountManagementController;
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
@@ -10,6 +11,8 @@ use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\ContentController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\ManagerReportController;
+use App\Http\Controllers\ReportReviewController;
+use App\Http\Controllers\SetupLifecycleController;
 use App\Http\Controllers\WorkspaceController;
 use Illuminate\Support\Facades\Route;
 
@@ -23,16 +26,16 @@ Route::post('/language/{locale}', [LocaleController::class, 'update'])->name('la
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthenticatedSessionController::class, 'create'])->name('login');
-    Route::post('/login', [AuthenticatedSessionController::class, 'store'])->name('login.store');
+    Route::post('/login', [AuthenticatedSessionController::class, 'store'])->middleware('throttle:authentication')->name('login.store');
 
     Route::get('/sign-up', [RegisteredUserController::class, 'create'])->name('register');
-    Route::post('/sign-up', [RegisteredUserController::class, 'store'])->name('register.store');
+    Route::post('/sign-up', [RegisteredUserController::class, 'store'])->middleware('throttle:authentication')->name('register.store');
 
     Route::get('/forgot-password', [PasswordResetLinkController::class, 'create'])->name('password.request');
-    Route::post('/forgot-password', [PasswordResetLinkController::class, 'store'])->name('password.email');
+    Route::post('/forgot-password', [PasswordResetLinkController::class, 'store'])->middleware('throttle:authentication')->name('password.email');
 
     Route::get('/reset-password/{token}', [NewPasswordController::class, 'create'])->name('password.reset');
-    Route::post('/reset-password', [NewPasswordController::class, 'store'])->name('password.store');
+    Route::post('/reset-password', [NewPasswordController::class, 'store'])->middleware('throttle:authentication')->name('password.store');
 });
 
 Route::middleware('auth')->group(function () {
@@ -42,6 +45,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard/department-manager', [WorkspaceController::class, 'dashboard'])->name('dashboard.manager');
     Route::get('/dashboard/employee', [WorkspaceController::class, 'dashboard'])->name('dashboard.employee');
     Route::get('/dashboard/landlord', [WorkspaceController::class, 'dashboard'])->name('dashboard.landlord');
+
+    Route::post('/accounts/{kind}/{id}/lifecycle', [SetupLifecycleController::class, 'update'])->middleware(['admin', 'throttle:10,1'])->where('kind', 'department|property')->whereNumber('id')->name('setup.lifecycle');
+    Route::post('/accounts/users/{user}/lifecycle', [AccountLifecycleController::class, 'update'])->middleware(['admin', 'throttle:10,1'])->whereNumber('user')->name('accounts.lifecycle');
 
     Route::get('/accounts/{kind}/{id}/edit', [AccountManagementController::class, 'edit'])->middleware('admin')->where('kind', 'user|property|department')->whereNumber('id')->name('accounts.edit');
     Route::put('/accounts/{kind}/{id}', [AccountManagementController::class, 'update'])->middleware('admin')->where('kind', 'user|property|department')->whereNumber('id')->name('accounts.update');
@@ -71,6 +77,9 @@ Route::middleware('auth')->group(function () {
     Route::post('/workspace/items/{item}/decision', [WorkspaceController::class, 'decide'])->whereNumber('item')->name('workspace.decide');
 
     Route::middleware('admin')->prefix('admin')->name('admin.')->group(function () {
+        Route::get('/report-reviews', [ReportReviewController::class, 'index'])->name('report-reviews.index');
+        Route::get('/report-reviews/{submission}/download', [ReportReviewController::class, 'download'])->whereNumber('submission')->name('report-reviews.download');
+        Route::post('/report-reviews/{submission}', [ReportReviewController::class, 'decide'])->whereNumber('submission')->name('report-reviews.decide');
         Route::get('/users/account-requests', [AccountApprovalController::class, 'index'])->name('account-requests.index');
         Route::post('/users/account-requests/{user}', [AccountApprovalController::class, 'decide'])->whereNumber('user')->name('account-requests.decide');
         Route::redirect('/', '/dashboard/admin')->name('home');

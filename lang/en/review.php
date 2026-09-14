@@ -1,0 +1,3 @@
+<?php
+
+return ['processing' => 'File processing is pending. Approval is available after processing succeeds.', 'title' => 'Financial report review', 'history' => 'Review history', 'draft' => 'Draft', 'pending' => 'Pending review', 'returned' => 'Return for correction', 'rejected' => 'Rejected', 'approved' => 'Approved', 'comment' => 'Review comment / reason', 'duplicate' => 'A report already exists for this property and month. It cannot be overwritten.', 'missing_file' => 'The report attachment is missing.', 'immutable' => 'An approved submission cannot be overwritten.', 'decide' => 'Record decision'];

@@ -124,3 +124,25 @@ Set the server deployment hook to `composer deploy`, which runs `migrate --force
 The desktop login layout uses a compact two-column demo account card and reduced heading/form spacing so the expanded local demo panel does not push login controls below a typical laptop viewport. Overrides are scoped to the login route; content remains reachable on smaller screens and at increased browser zoom rather than being clipped by hidden overflow.
 
 Production demo card visibility is covered locally with production environment rendering, seeded account readiness, English/Arabic copy, and the disable switch. This does not verify the deployed server.
+
+## Backend foundation and manuals — 14 September 2026
+
+The owner's backend, queue, security, test and bilingual manual instructions are recorded in `docs/backend-delivery.md` and linked from `PROJECT_REQUIREMENTS.md` / `README.md`. Work proceeds by actual role order; this chunk is 1A, not completion of the entire Admin lifecycle or financial workflow.
+
+Authentication POSTs now have shared email/IP and aggregate IP limits. Password recovery uses a uniform response and an encrypted after-commit notification with bounded retries on the `notifications` queue. Durable queue connections dispatch after commit. Account/department/property edits acquire a target-row lock and save an audit event in the same transaction. No migration or visual application change is needed.
+
+Production recovery email now depends on a supervised queue worker and configured mail transport; see the backend ledger. General document/report notification delivery and file processing are still pending. Existing demo access behavior is preserved. Local checks do not verify production readiness, actual email delivery or concurrent MySQL locking.
+
+English and Arabic version 1 PDF manuals in `docs/manuals/` cover current Admin setup navigation, account approval and recovery, with eight sanitized application-rendered screenshots and editable HTML sources. Regenerate from HTML using `node scripts/render-user-manuals.mjs` with a local headless Chrome page on port 9238. The renderer validates image readiness and page overflow before printing. Screenshots were generated from an isolated in-memory database, not production.
+
+Local verification: full suite **58 tests / 2,313 assertions** passed, including new abuse-limit, reset queue/privacy, authorization, audit and rollback coverage. Laravel Pint and Blade compilation passed. No production deployment was performed.
+
+## Day 1 Admin implementation and revised manuals
+
+Applied pending local migrations and the additive `2026_09_14_180000_add_account_lifecycle_fields` migration. `/accounts/users/{user}/lifecycle` is an Admin-only POST for suspension, restoration or queued recovery, requiring the acting Admin password. User edit screens expose these controls in both languages. Suspended accounts cannot log in or use protected routes; restore preserves approval status. Database sessions are deleted on suspension; see the backend ledger for other-session-driver limits.
+
+Setup creations are audited transactionally; updates retain safe before/after fields and assignment IDs. `/admin/audit-logs/view-audit-logs?source=changes` displays account/content audit events and expandable changes; login history remains available via the source selector. Local full suite: **66 tests / 2,357 assertions passed**, Pint and Blade compilation passed.
+
+The owner revised delivery to five working days and requested HTML-based PDF previews instead of screenshots. `docs/backend-delivery.md` records daily scope and gates. Existing screenshots were removed; manual builds now render application Blade HTML into transient frames, reuse application assets and print both PDFs. No additional screenshot library is created. Previous screenshot-based manual notes above are historical and superseded by this section.
+
+Manual revision verified: seven pages per language, direct HTML previews, no retained screenshots. PHP screen-render helper passes formatting, both PDFs pass readiness/overflow and page-count checks, and English/Arabic interior previews were visually inspected. Day 1 closed; later daily scopes remain pending as documented.

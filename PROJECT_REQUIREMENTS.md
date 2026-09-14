@@ -381,3 +381,13 @@ Based on the current client proposal, these should be treated as future enhancem
 - Landlord export of on-screen charts.
 - Automated alerts for unusual occupancy or revenue numbers.
 - Full document version history for normal documents.
+
+## Production backend delivery instructions — 14 September 2026
+
+The owner requires implementation in actual role/workflow order, starting with Admin setup and access, then managers, employees, financial review and landlords. Deliver complete, tested chunks and maintain a live implementation ledger. Security, password hashing, relational integrity, private access, performance, scalability and operational availability are mandatory design concerns.
+
+Expensive upload processing, notifications, imports and report generation must use queues from the outset, with retries, timeouts, transaction-aware dispatch and monitored failures. Keep English and Arabic PDF user manuals updated alongside completed features, including real application screenshots without client data or credentials. See [the backend delivery ledger](docs/backend-delivery.md) for the full owner instructions, implementation sequence, completed changes and outstanding operational acceptance work.
+
+### Owner revision: daily scope and manual rendering
+
+Divide delivery across five working days as detailed in `docs/backend-delivery.md`; do not attempt all modules on the first day. Complete each daily work package with tests and documentation. Reuse existing application screen HTML for English/Arabic PDF manuals instead of generating and retaining individual screenshots. This replaces the earlier screenshot-storage instruction.

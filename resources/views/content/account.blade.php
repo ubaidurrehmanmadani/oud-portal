@@ -18,4 +18,30 @@
     @endif
     <div class="wide"><button class="button button-primary">{{ __('workspace.save') }}</button></div>
 </form></section>
+@if ($kind === 'user')
+<section class="card">
+    <h2>{{ __('lifecycle.title') }}</h2>
+    <p>{{ __('lifecycle.help') }}</p>
+    <p>{{ __('lifecycle.'.($record->suspended_at ? 'suspended' : 'active')) }}</p>
+    <form method="POST" action="{{ route('accounts.lifecycle', $record->id) }}" class="content-form">
+        @csrf
+        <div class="field"><label for="current_password">{{ __('lifecycle.password') }}</label><input type="password" id="current_password" name="current_password" required autocomplete="current-password"></div>
+        <div class="wide">
+            @if ($record->id !== auth()->id())
+                <button class="button" name="action" value="{{ $record->suspended_at ? 'restore' : 'suspend' }}">{{ __('lifecycle.'.($record->suspended_at ? 'restore' : 'suspend')) }}</button>
+            @endif
+            @if (!$record->suspended_at && $record->approval_status === 'approved')
+                <button class="button" name="action" value="reset_password">{{ __('lifecycle.reset_password') }}</button>
+            @endif
+        </div>
+    </form>
+</section>
+@endif
+@if (in_array($kind, ['department', 'property']))
+<section class="card"><h2>{{ __('setup.title') }}</h2><p>{{ __('setup.help') }}</p>
+<form method="POST" class="content-form" action="{{ route('setup.lifecycle', ['kind'=>$kind,'id'=>$record->id]) }}">@csrf
+<div class="field"><label for="setup_password">{{ __('lifecycle.password') }}</label><input id="setup_password" type="password" name="current_password" required autocomplete="current-password"></div>
+<div class="wide"><button class="button button-secondary" name="action" value="{{ $record->archived_at ? 'restore' : 'archive' }}">{{ __('setup.'.($record->archived_at ? 'restore' : 'archive')) }}</button>
+@if($record->archived_at)<button class="button button-secondary" name="action" value="delete">{{ __('setup.delete') }}</button>@endif</div></form></section>
+@endif
 @endsection

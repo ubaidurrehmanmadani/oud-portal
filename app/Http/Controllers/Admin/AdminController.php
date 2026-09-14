@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\ContentController;
 use App\Http\Controllers\Controller;
+use App\Models\AuditEvent;
 use App\Models\Department;
 use App\Models\LoginEvent;
 use App\Models\Property;
@@ -97,12 +98,15 @@ class AdminController extends Controller
     private function screen(string $module, string $view): View
     {
         $kind = ['documents' => 'document', 'academy' => 'training', 'reports' => 'report', 'approvals' => 'approval', 'announcements' => 'announcement'][$module] ?? null;
+        if ($module === 'audit') {
+            request()->validate(['source' => 'nullable|in:login,changes']);
+        }
         $query = match ($module) {
             'users' => User::with('department'),
             'departments' => Department::query(),
             'properties' => Property::query(),
             'permissions' => Role::with('permissions'),
-            'audit' => LoginEvent::with('user'),
+            'audit' => request('source') === 'changes' ? AuditEvent::with('user') : LoginEvent::with('user'),
             default => $kind ? WorkspaceItem::where('kind', $kind)->with(['department', 'property']) : null,
         };
         request()->validate(['q' => 'nullable|string|max:200']);

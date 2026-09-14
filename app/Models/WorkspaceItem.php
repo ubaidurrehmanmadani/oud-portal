@@ -31,6 +31,7 @@ class WorkspaceItem extends Model
         if ($user->role === UserRole::ADMIN) {
             return;
         }
+        $query->where(fn (Builder $q) => $q->where('file_processing_required', false)->orWhereNotNull('file_processed_at'));
         $query->where(fn (Builder $q) => $q->whereNull('published_at')->orWhere('published_at', '<=', now()));
         if ($user->role === UserRole::LANDLORD) {
             $query->where('audience', 'landlord')

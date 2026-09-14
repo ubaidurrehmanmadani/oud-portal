@@ -44,7 +44,7 @@ class AuthenticatedSessionController extends Controller
             ]);
         }
 
-        if (Auth::user()->approval_status !== 'approved') {
+        if (Auth::user()->approval_status !== 'approved' || Auth::user()->suspended_at !== null) {
             Auth::logout();
             $request->session()->invalidate();
             $request->session()->regenerateToken();

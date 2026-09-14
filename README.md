@@ -115,3 +115,11 @@ Configure the server deployment hook to run `composer deploy` (or the two Larave
 These accounts are created approved with hashed passwords and profiles. Existing accounts with these emails are preserved, including changed passwords and permissions. `DEMO_USER_PASSWORD` applies only to the older Ubaid demo accounts. The landlord receives the seeded property assignments; an Admin must assign the manager a department and any required reporting permissions through account management. Uploading files alone does not run seeders: the server deployment hook must be configured.
 
 The login credentials card is temporarily enabled in production as well as locally. It shows the four deployment accounts above. To hide it later, set `DEMO_ACCESS_ENABLED=false` on the server and rebuild the configuration cache with `php artisan config:cache`. Keep `APP_ENV=production`.
+
+## Backend delivery and user manuals
+
+Backend work follows actual role order, beginning with administrator setup and access. Owner instructions, queue architecture, completed chunks, tests and remaining work are tracked in [the backend delivery ledger](docs/backend-delivery.md).
+
+User guides are maintained in [English (PDF)](docs/manuals/user-manual-en.pdf) and [Arabic (PDF)](docs/manuals/user-manual-ar.pdf), with editable HTML sources and application HTML previews in `docs/manuals/`. They describe completed workflows only. Screen previews reuse Blade HTML at build time; no separate screenshot library is kept. Delivery follows the five-day plan in the backend ledger.
+
+Password-reset email now requires a queue worker listening to `notifications`; configure the mail transport and supervise `php artisan queue:work --queue=notifications,default --timeout=60`. See the ledger for retries, deployment restart and monitoring requirements. Local test success does not verify mail delivery or Laravel Cloud operation.
