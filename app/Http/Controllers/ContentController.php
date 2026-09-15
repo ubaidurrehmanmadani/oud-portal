@@ -162,7 +162,7 @@ class ContentController extends Controller
                 if ($record->file_processing_required && ! $record->file_processed_at) {
                     ProcessPrivateUpload::dispatch('workspace', $record->id, $record->file_path);
                 }
-                if (! $record->file_processing_required && $notifyPublication && in_array($kind, ['document', 'report', 'approval']) && in_array($record->status, ['published', 'pending'])) {
+                if ((! $record->file_processing_required || $record->file_processed_at) && $notifyPublication && in_array($kind, ['document', 'report', 'approval']) && in_array($record->status, ['published', 'pending'])) {
                     NotifyWorkspacePublication::dispatch($record->id)->delay($record->published_at ?? now());
                 }
                 AuditEvent::create(['user_id' => $request->user()->id, 'event' => 'content.saved:'.$record->id, 'ip_address' => $request->ip(), 'user_agent' => substr((string) $request->userAgent(), 0, 500)]);

@@ -13,6 +13,7 @@ use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\ManagerReportController;
 use App\Http\Controllers\ReportReviewController;
 use App\Http\Controllers\SetupLifecycleController;
+use App\Http\Controllers\UserManualController;
 use App\Http\Controllers\WorkspaceController;
 use Illuminate\Support\Facades\Route;
 
@@ -39,6 +40,9 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::middleware('auth')->group(function () {
+    Route::get('/help/manuals', [UserManualController::class, 'index'])->name('manuals.index');
+    Route::get('/help/manuals/{locale}.pdf', [UserManualController::class, 'pdf'])->where('locale', 'en|ar')->name('manuals.pdf');
+
     Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
 
     Route::get('/dashboard/admin', [WorkspaceController::class, 'dashboard'])->name('dashboard.admin');

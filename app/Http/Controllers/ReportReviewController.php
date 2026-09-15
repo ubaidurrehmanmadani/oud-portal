@@ -52,7 +52,7 @@ class ReportReviewController extends Controller
                         'status' => 'published', 'published_at' => now(), 'report_month' => $report->report_month,
                         'period' => $report->report_month->format('Y-m'), 'file_path' => $report->file_path, 'file_name' => $report->file_name,
                         'occupancy' => $metrics['occupancy'] ?? null, 'net_revenue' => $metrics['net_revenue'] ?? null,
-                        'financial_data' => null,
+                        'financial_data' => ['management_metrics' => $metrics],
                         'file_processing_required' => $report->file_processing_required, 'file_processed_at' => $report->file_processed_at, 'file_sha256' => $report->file_sha256,
                     ]);
                     $report->published_item_id = $item->id;

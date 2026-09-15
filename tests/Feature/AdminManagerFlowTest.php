@@ -32,7 +32,7 @@ class AdminManagerFlowTest extends TestCase
         $property = Property::create(['name' => 'Reporting property']);
         $manager->properties()->attach($property);
         Storage::disk('local')->put('report-submissions/report.pdf', '%PDF-1.4');
-        $submission = ReportSubmission::create(['user_id' => $manager->id, 'department_id' => $department->id, 'property_id' => $property->id, 'title' => 'Monthly figures', 'report_month' => '2026-09-01', 'status' => 'pending', 'submitted_at' => now(), 'file_path' => 'report-submissions/report.pdf', 'file_name' => 'report.pdf', 'metrics' => ['occupancy' => 0, 'net_revenue' => -100]]);
+        $submission = ReportSubmission::create(['user_id' => $manager->id, 'department_id' => $department->id, 'property_id' => $property->id, 'title' => 'Monthly figures', 'report_month' => '2026-09-01', 'status' => 'pending', 'submitted_at' => now(), 'file_path' => 'report-submissions/report.pdf', 'file_name' => 'report.pdf', 'metrics' => ['occupancy' => 0, 'net_revenue' => -100, 'gross_revenue' => 54321, 'rent' => 12345]]);
 
         return [$admin, $manager, $property, $submission];
     }
@@ -45,13 +45,15 @@ class AdminManagerFlowTest extends TestCase
         $this->post($url, ['decision' => 'returned', 'comment' => 'Correct the figures'])->assertSessionHasNoErrors();
         $this->assertSame('returned', $report->fresh()->status);
         $this->actingAs($manager)->get(route('manager.reports.edit', $report))->assertSee('Correct the figures');
-        $this->put(route('manager.reports.update', $report), ['title' => $report->title, 'property_id' => $property->id, 'report_month' => '2026-09', 'action' => 'submit', 'metrics' => ['occupancy' => 0, 'net_revenue' => -100]])->assertSessionHasNoErrors();
+        $this->put(route('manager.reports.update', $report), ['title' => $report->title, 'property_id' => $property->id, 'report_month' => '2026-09', 'action' => 'submit', 'metrics' => ['occupancy' => 0, 'net_revenue' => -100, 'gross_revenue' => 54321, 'rent' => 12345]])->assertSessionHasNoErrors();
         $this->assertDatabaseCount('workspace_items', 0);
         $this->actingAs($admin)->post($url, ['decision' => 'approved'])->assertSessionHasNoErrors();
         $item = WorkspaceItem::findOrFail($report->fresh()->published_item_id);
         $this->assertSame('published', $item->status);
         $this->assertSame('0.00', $item->occupancy);
         $this->assertSame('-100.00', $item->net_revenue);
+        $this->assertSame(54321, $item->financial_data['management_metrics']['gross_revenue']);
+        $this->assertSame(12345, $item->financial_data['management_metrics']['rent']);
         $this->assertDatabaseCount('report_reviews', 2);
         Queue::assertPushed(NotifyWorkspacePublication::class);
         $this->post($url, ['decision' => 'approved'])->assertConflict();
@@ -59,7 +61,7 @@ class AdminManagerFlowTest extends TestCase
         $this->actingAs($manager)->put(route('manager.reports.update', $report), [])->assertConflict();
         $owner = User::factory()->create(['role' => UserRole::LANDLORD]);
         $owner->properties()->attach($property);
-        $this->actingAs($owner)->followingRedirects()->get(route('workspace.show', $item))->assertOk();
+        $this->actingAs($owner)->followingRedirects()->get(route('workspace.show', $item))->assertOk()->assertSee('54,321.00')->assertSee('12,345.00');
         $this->get($url)->assertStatus(405);
     }
 
@@ -113,6 +115,14 @@ class AdminManagerFlowTest extends TestCase
         Storage::disk('local')->assertExists('workspace/new.pdf');
         $report->update(['file_processing_required' => true]);
         $this->actingAs($admin)->post(route('admin.report-reviews.decide', $report), ['decision' => 'approved'])->assertConflict();
+    }
+
+    public function test_processed_draft_publication_queues_notification(): void
+    {
+        [$admin] = $this->fixture();
+        $item = WorkspaceItem::create(['title' => 'Processed draft', 'kind' => 'document', 'audience' => 'staff', 'status' => 'draft', 'file_path' => 'workspace/ready.pdf', 'file_processing_required' => true, 'file_processed_at' => now()]);
+        $this->actingAs($admin)->put(route('content.update', $item), ['title' => $item->title, 'audience' => 'staff', 'status' => 'published'])->assertSessionHasNoErrors();
+        Queue::assertPushed(NotifyWorkspacePublication::class, fn ($job) => $job->itemId === $item->id);
     }
 
     public function test_notifications_recheck_recipient_scope(): void

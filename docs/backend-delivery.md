@@ -19,11 +19,11 @@ These requirements apply to every subsequent implementation chunk:
 | Chunk | Scope | Status |
 | --- | --- | --- |
 | 1A | Authentication abuse limits, queued recovery email, assignment audit and transaction locking | Implemented; local verification below |
-| 1B | Complete Admin lifecycle: creation, archive/removal rules, password administration, richer permission audit, setup validation | Pending full gap audit and implementation |
-| 2 | Department publishing, private staged uploads and queued processing/notifications | Existing basic publishing; processing and delivery pending |
+| 1B | Complete Admin lifecycle: creation, archive/removal rules, password administration, richer permission audit, setup validation | Setup lifecycle and audit implemented; broader permission/user-deletion gaps listed in latest update |
+| 2 | Department publishing, private staged uploads and queued processing/notifications | Publishing and queued integrity processing/notifications implemented; production delivery unverified |
 | 3 | Employee scoped consumption and notifications | Existing basic access; delivery integration pending |
-| 4 | Manager monthly drafts/submission, secure upload processing | Existing submission; processing enhancements pending |
-| 5 | Admin financial review, return/correction/resubmit, approved publication | Pending; reviewer uses existing Admin role until a separate level is confirmed |
+| 4 | Manager monthly drafts/submission, secure upload processing | Submission, corrections and queued integrity processing implemented |
+| 5 | Admin financial review, return/correction/resubmit, approved publication | Implemented using the existing Admin role; see latest update |
 | 6 | Landlord reports and request decisions | Existing basic decisions; multiple-owner decision rule and execution handoff remain unresolved |
 | 7 | Deployment resilience, load/security verification, Odoo integration | Pending environment and confirmed Odoo contract |
 
@@ -41,7 +41,7 @@ These requirements apply to every subsequent implementation chunk:
 Use a durable asynchronous queue connection in production, not `sync`, `null`, or a process-local fallback. Existing database jobs/failed-jobs migrations provide the initial backend. Run a supervised worker, for example:
 
 ```sh
-php artisan queue:work --queue=notifications,default --sleep=1 --tries=3 --timeout=60 --max-time=3600
+php artisan queue:work --queue=uploads,notifications,default --sleep=1 --tries=3 --timeout=60 --max-time=3600
 ```
 
 Keep `retry_after` above the worker timeout (existing database/Redis default: 90 seconds). Configure the mail transport, sender, shared APP_KEY and durable queue access for web and workers. Restart workers on deployment with `php artisan queue:restart`; supervise automatic restart and monitor failures and queue age. Failed encrypted reset jobs contain sensitive links: restrict queue access and do not retry expired reset links; request a fresh link instead. Reset expiry remains the password broker's configured value.
@@ -90,3 +90,36 @@ Odoo implementation still depends on actual modules/API credentials/sync contrac
 `render-user-manuals.mjs` calls `render-manual-screens.php`, which forces an isolated in-memory SQLite connection before migrations and fixture creation, reuses actual controllers/Blade views, disables demo credentials, and returns transient HTML. HTML is inserted into manual frames in browser memory and printed to PDF. No per-screen image or HTML snapshots are retained in the repository. Existing shared application assets are reused. Previous generated screenshot files were removed at the owner's request.
 
 Day 1 close-out: both HTML-based PDFs regenerated successfully with seven pages each. Native PDFKit confirmed page counts; English and Arabic previews were visually inspected, including the complete account action panel. `docs/manuals/` contains only two HTML sources, two PDFs and its README; no screenshot files remain. The screen renderer uses temporary browser-memory HTML, with no persisted screen snapshots. Day 2 is not started in this session.
+
+## Admin/Manager continuation — 15 September 2026
+
+The owner's later instruction to complete Admin and Manager flows now overrides the earlier daily stopping boundary for these roles. Continue the existing work rather than restarting. The role migration referenced by the owner was inspected; no forward migration error reproduced. `php artisan migrate` with local MySQL socket access reports **Nothing to migrate**. No production migration or deployment is claimed.
+
+### Current implemented workflow
+
+- Admin setup, account approval, assignments, suspension/restoration and queued password recovery remain available. Department/property archive/restore and deletion of unused archived records are now implemented; assignments or retained content/submissions block deletion.
+- Department managers can manage their own documents/training/announcements. Archived departments block new publishing. Authorized reporting heads can save drafts, submit, inspect review history, correct returned submissions and resubmit. Pending, rejected and approved submissions are locked.
+- Admin financial review is available at `/admin/report-reviews`. Return/reject requires a comment. Approval requires completed file processing and an available attachment, and creates an assigned-property monthly report. Existing property/month records are not overwritten. The reviewed submission and its published report are linked; published submissions cannot be changed through content editing.
+- Review decisions retain reviewer, timestamp, comments and submitted snapshots. Reviewed attachment originals are retained when corrected files replace them. Database foreign keys protect review/submission/publication history.
+- New uploads are private and enqueue `ProcessPrivateUpload` on `uploads`. The worker streams the file to calculate SHA-256 and checks readability/size; stale/repeated processing jobs do not overwrite newer files or repeat publication dispatch. Required processing blocks landlord/staff visibility and report approval until successful. This is integrity processing, **not antivirus scanning or spreadsheet parsing**.
+- New publication notifications are queued with recipient chunking; recipient role/property/department access is rechecked before email delivery. Unreferenced file cleanup is queued and checks content, submissions and review snapshots before deletion. Mail delivery is at-least-once; a provider interruption during retries can cause duplicates.
+
+### Corrections completed today
+
+- Approved reports now retain all submitted management metrics, including gross revenue and rent, and display them in a separate management figures section. Missing values stay missing; zero occupancy and negative net revenue survive publication. No unsupported financial breakdown is inferred from these totals.
+- Publishing a draft whose file has already completed processing now queues its publication notification.
+- Manager updates use the row fetched under lock, including its current attachment, instead of saving a stale pre-lock model.
+- Queue worker documentation now includes the `uploads` queue; omitting it would leave uploads waiting indefinitely.
+- English/Arabic manuals now include manager workspace/submission and Admin review, using actual temporary Blade-rendered HTML and synthetic data. No screenshot library is generated.
+
+### Verification and remaining boundaries
+
+Full local suite: **72 tests / 2,409 assertions passed**, including complete return/resubmit/approve/publication, immutable reports, duplicate months, archive restrictions, queue visibility/stale jobs, notification audience checks, approved metric rendering and processed-draft publication. Local SQLite tests do not establish live SMTP delivery, MySQL race behavior under load, malware detection or production availability.
+
+Not claimed complete: physical user deletion with history policy, general custom permission overrides/delegated manager user administration, person-targeted announcements, malware scanning service, automatic workbook mapping, Odoo integration, multi-owner approval policy, and production worker/monitoring/backup/load acceptance. Existing user suspension provides access removal without destroying history. These outstanding requirements must remain tracked; the completed reporting chain does not mean every project requirement is finished.
+
+Manual validation: version 3 PDFs regenerated directly from current Blade HTML; both contain ten pages. Native PDFKit page counts and English/Arabic review-page visual checks passed. Preview-only framing focuses the review controls without changing application views. Formatting, Blade compilation, JavaScript syntax and diff whitespace checks passed. No screenshots are stored in the manual directory.
+
+## In-product user manual — 15 September 2026
+
+Added a shared sidebar link and authenticated `/help/manuals` page with both language PDFs. PDF routes support inline viewing and explicit download, use allowlisted filenames and private/no-store/nosniff responses, and preserve approval/suspension guards. Local focused verification: **2 tests / 97 assertions passed**, covering all roles, both locales, navigation, downloads, invalid locale and blocked/guest access. Pint, Blade compilation and whitespace checks passed. Deployment must include the PDF artifacts; no production deployment is claimed.

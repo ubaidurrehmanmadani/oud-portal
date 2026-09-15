@@ -13,3 +13,7 @@ node scripts/render-user-manuals.mjs
 The Node 22+ renderer calls `php scripts/render-manual-screens.php`. That helper explicitly switches to in-memory SQLite, migrates only that isolated database, creates synthetic users and renders actual controllers/Blade views. It removes screen scripts and external font links. Existing application assets are reused. Generated screen HTML is held in memory, injected into preview frames and printed, not stored as a growing image library. No live client data is used.
 
 The renderer checks screen readiness and page overflow. Inspect PDFs after content changes. Close the dedicated Chrome instance after use. These are local rendered screens, not production or end-to-end browser verification. Update both languages at each completed daily milestone; follow the five-day plan in `docs/backend-delivery.md`.
+
+Version 3 (15 September 2026) adds manager workspace, report submission/correction and Admin review/publication guidance. Ten pages per language. Synthetic manager/property/submission records are rendered in the isolated in-memory database; no attachment is presented as a client-supplied original. The source helper renders each screen with the appropriate role.
+
+In-product access: after login choose **User manual / دليل المستخدم**, or visit `/help/manuals`. Both languages can be viewed and downloaded. Direct authenticated PDF URLs: `/help/manuals/en.pdf` and `/help/manuals/ar.pdf`; `?download=1` forces a download. Both PDF artifacts must ship with deployments.

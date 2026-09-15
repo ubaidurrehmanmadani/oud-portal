@@ -89,10 +89,12 @@ class ManagerReportController extends Controller
         $oldPath = $record->file_path;
         $retainOriginal = $record->exists && $record->reviews()->exists();
         try {
-            DB::transaction(function () use ($request, $record, $data, $newPath) {
+            DB::transaction(function () use ($request, $record, $data, $newPath, &$oldPath) {
                 if ($record->exists) {
                     $locked = $this->query($request)->lockForUpdate()->findOrFail($record->id);
                     abort_if(! in_array($locked->status, ['draft', 'returned'], true), 409);
+                    $record = $locked;
+                    $oldPath = $locked->file_path;
                 }
                 $record->fill(collect($data)->except(['file', 'action'])->all());
                 $record->report_month = $data['report_month'].'-01';

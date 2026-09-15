@@ -146,3 +146,17 @@ Setup creations are audited transactionally; updates retain safe before/after fi
 The owner revised delivery to five working days and requested HTML-based PDF previews instead of screenshots. `docs/backend-delivery.md` records daily scope and gates. Existing screenshots were removed; manual builds now render application Blade HTML into transient frames, reuse application assets and print both PDFs. No additional screenshot library is created. Previous screenshot-based manual notes above are historical and superseded by this section.
 
 Manual revision verified: seven pages per language, direct HTML previews, no retained screenshots. PHP screen-render helper passes formatting, both PDFs pass readiness/overflow and page-count checks, and English/Arabic interior previews were visually inspected. Day 1 closed; later daily scopes remain pending as documented.
+
+## Admin/Manager reporting continuation — 15 September 2026
+
+The owner authorized continuing Admin/Manager beyond the prior day boundary. The implemented review queue is `/admin/report-reviews`, with download and POST decision routes guarded by Admin middleware. `resources/views/admin/reports/review.blade.php` shows pending/returned/rejected/approved reports; managers see comments/history and may correct returned reports. Approval publishes an immutable property/month report and dispatches notifications. Duplicate months conflict rather than overwrite.
+
+Migrations now present locally: `2026_09_14_190000_create_report_reviews`, `2026_09_14_191000_add_setup_archiving`, `2026_09_14_192000_add_upload_processing`. On 15 September local MySQL `migrate` reports nothing pending. Archive/delete controls live on existing account edit screens. Deletion requires an archived, unassigned record without content/submissions.
+
+Uploads enqueue `ProcessPrivateUpload`; protected content remains hidden until required processing completes. Workers must listen to `uploads,notifications,default`. Integrity processing calculates a streamed checksum; no malware scanning or automatic financial workbook parsing is claimed. Notification recipient access is rechecked before delivery; cleanup preserves referenced files and review originals.
+
+Today's fixes preserve/show all approved management figures, dispatch notifications for already-processed drafts when published, and use freshly locked manager rows during updates. The financial report view shows management figures without inventing component breakdowns. The complete local suite passes **72 tests / 2,409 assertions**. Production delivery and load/concurrency acceptance remain unverified. See the current backend ledger for remaining requirements; earlier notes stating that Admin review was unimplemented are superseded.
+
+## In-product manual access — 15 September 2026
+
+All four role sidebars now include **User manual / دليل المستخدم**. `/help/manuals` offers English and Arabic open/download actions; `/help/manuals/en.pdf` and `/help/manuals/ar.pdf` serve the existing PDFs, with `?download=1` for attachment download. Authentication, account approval and suspension middleware protect the page and files. Locale allowlisting fixes file paths; responses use private/no-store caching and nosniff. No copying to public storage or PDF generation occurs on requests. Deploy `docs/manuals/user-manual-en.pdf` and `docs/manuals/user-manual-ar.pdf` with the application. Missing packaged PDFs return 404.

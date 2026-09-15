@@ -21,6 +21,13 @@
 </div>
 <section class="hero landlord-hero"><div><p class="eyebrow">{{ __('workspace.property') }} · {{ $monthDate->translatedFormat('F Y') }}</p><h1>{{ $selectedProperty->name }}</h1><p>{{ __('financial.monthly_intro') }}</p></div></section>
 @unless ($report->record)<p class="notice">{{ __('financial.no_report') }}</p>@endunless
+@if ($managementMetrics = data_get($report->record?->financial_data, 'management_metrics'))
+<section class="card"><h2>{{ __('portal.manager_metrics') }}</h2><dl>
+@foreach (['occupancy', 'gross_revenue', 'net_revenue', 'rent'] as $metric)
+<dt>{{ __('portal.manager_'.$metric) }}</dt><dd>{{ isset($managementMetrics[$metric]) ? $format((float) $managementMetrics[$metric], $metric === 'occupancy' ? '%' : '') : '—' }}</dd>
+@endforeach
+</dl></section>
+@endif
 <section class="kpi-grid">
     @foreach (['rent' => $report->componentTotal('rent'), 'service' => $report->componentTotal('service'), 'total' => $report->totalRevenue(), 'collection_rate' => $report->collectionRate()] as $label => $value)
         <article class="card metric"><span>{{ __('financial.'.$label) }}</span><strong>{{ $format($value, $label === 'collection_rate' ? '%' : '') }}</strong><p>{{ $label === 'collection_rate' ? __('financial.rent_due') : __('financial.currency') }}</p></article>

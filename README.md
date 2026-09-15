@@ -122,4 +122,8 @@ Backend work follows actual role order, beginning with administrator setup and a
 
 User guides are maintained in [English (PDF)](docs/manuals/user-manual-en.pdf) and [Arabic (PDF)](docs/manuals/user-manual-ar.pdf), with editable HTML sources and application HTML previews in `docs/manuals/`. They describe completed workflows only. Screen previews reuse Blade HTML at build time; no separate screenshot library is kept. Delivery follows the five-day plan in the backend ledger.
 
-Password-reset email now requires a queue worker listening to `notifications`; configure the mail transport and supervise `php artisan queue:work --queue=notifications,default --timeout=60`. See the ledger for retries, deployment restart and monitoring requirements. Local test success does not verify mail delivery or Laravel Cloud operation.
+Password-reset email now requires a queue worker listening to `notifications`; configure the mail transport and supervise `php artisan queue:work --queue=uploads,notifications,default --timeout=60`. See the ledger for retries, deployment restart and monitoring requirements. Local test success does not verify mail delivery or Laravel Cloud operation.
+
+### Open the manual inside the product
+
+After login, select **User manual / دليل المستخدم** in the sidebar, or open `/help/manuals` on your application domain. Choose English or Arabic to open/download the PDF. Direct authenticated URLs are `/help/manuals/en.pdf` and `/help/manuals/ar.pdf`; append `?download=1` to download. Include both PDFs from `docs/manuals/` in deployments. This route serves the saved manual and does not generate images or PDFs per request.

@@ -38,6 +38,7 @@
                     <a class="{{ request()->routeIs('manager.reports.*') ? 'active' : '' }}" href="{{ route('manager.reports.index') }}">{{ __('portal.manager_reports') }}</a>
                 @endif
                 @endif
+                <a href="{{ route('manuals.index') }}" @if(request()->routeIs('manuals.*')) class="active" aria-current="page" @endif>{{ __('manual.title') }}</a>
             </nav>
         </div>
     </aside>
