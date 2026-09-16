@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="{{ asset('oud/report-sidebar.css') }}" data-report-style media="{{ ($isFinancialReport ?? false) ? 'all' : 'not all' }}">
     <link rel="stylesheet" href="{{ asset('oud/user-role-button.css') }}">
     <link rel="stylesheet" href="{{ asset('oud/user-role-popup.css') }}">
+    @include('partials.select-assets')
     <link rel="stylesheet" href="{{ asset('oud/application.css') }}">
     <script src="{{ asset('oud/application.js') }}" defer></script>
 </head>

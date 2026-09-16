@@ -118,6 +118,10 @@ The login credentials card is temporarily enabled in production as well as local
 
 ## Backend delivery and user manuals
 
+For a standalone walkthrough using the owner's existing departments, properties and corrected Manager login, see [the client testing guide](docs/client-testing-guide.md). Supply the client testing URL and passwords privately before sharing; its starting account snapshot describes the local environment.
+
+For a complete role-by-role testing sequence, sample test records, expected results and the implemented-feature checklist, follow [the step-by-step acceptance testing guide](docs/testing-walkthrough.md). Start with Admin setup, then Manager publishing/reporting, Admin review and Employee/Landlord checks.
+
 Latest continuation (16 September 2026): targeted announcements, Admin-managed Manager/Landlord permission overrides, delegated department employee management, visible-content previews, queue failure monitoring/retries and session revocation are implemented locally. The two 15 September migrations are applied to local MySQL. See the latest entry in [the backend delivery ledger](docs/backend-delivery.md) for verification and remaining work; Laravel Cloud deployment is not verified.
 
 Backend work follows actual role order, beginning with administrator setup and access. Owner instructions, queue architecture, completed chunks, tests and remaining work are tracked in [the backend delivery ledger](docs/backend-delivery.md).

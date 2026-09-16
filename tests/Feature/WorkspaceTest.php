@@ -164,7 +164,7 @@ class WorkspaceTest extends TestCase
         $private = $this->item(['department_id' => $other->id]);
         $this->get(route('content.edit', $private))->assertNotFound();
         $this->put(route('content.update', $private), ['title' => 'Changed'])->assertNotFound();
-        $this->actingAs(User::factory()->create(['role' => UserRole::DEPARTMENT_MANAGER]))->get('/content')->assertForbidden();
+        $this->actingAs(User::factory()->create(['role' => UserRole::DEPARTMENT_MANAGER]))->get('/content')->assertOk()->assertSee('Department assignment required');
     }
 
     public function test_admin_can_create_edit_and_assign_workspace_records(): void

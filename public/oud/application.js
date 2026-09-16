@@ -92,6 +92,7 @@
         if (next.documentElement.lang !== document.documentElement.lang || next.body.dataset.portalRole !== shell.dataset.portalRole) return false;
         shell.classList.toggle('reporting', next.body.classList.contains('reporting'));
         document.querySelectorAll('[data-report-style]').forEach((stylesheet) => stylesheet.media = next.body.classList.contains('reporting') ? 'all' : 'not all');
+        window.OudSelects?.destroy(content);
         content.className = nextContent.className;
         content.innerHTML = nextContent.innerHTML;
         if (pageTitle && next.querySelector('[data-page-title]')) pageTitle.textContent = next.querySelector('[data-page-title]').textContent;
@@ -103,6 +104,7 @@
             else item.removeAttribute('aria-current');
         });
         document.title = next.title;
+        window.OudSelects?.init(content);
         setupTrainingCards();
         return true;
     };

@@ -10,6 +10,7 @@ use App\Support\ReferenceFiles;
 use App\Support\ReferenceReports;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class ReferenceWorkspaceSeeder extends Seeder
@@ -31,7 +32,14 @@ class ReferenceWorkspaceSeeder extends Seeder
             }
         }
         foreach (User::where('role', UserRole::LANDLORD)->get() as $landlord) {
-            $landlord->properties()->syncWithoutDetaching($properties->pluck('id'));
+            DB::transaction(function () use ($landlord, $properties) {
+                if (DB::table('seed_checkpoints')->insertOrIgnore(['name' => 'reference-landlord:'.$landlord->id, 'completed_at' => now()])) {
+                    // Keep deliberate existing assignments; initialize only unassigned owners.
+                    if (! $landlord->properties()->exists()) {
+                        $landlord->properties()->syncWithoutDetaching($properties->pluck('id'));
+                    }
+                }
+            });
         }
         foreach ([
             ['report', 'Monthly performance report', 'OUD Reserve', 'August 2026', 'Occupancy, revenue, and operational summary.'],

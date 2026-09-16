@@ -54,7 +54,7 @@ class DatabaseSeeder extends Seeder
             ['name' => 'Ubaid Landlord', 'email' => 'ubaid+landlord@gmail.com', 'role' => UserRole::LANDLORD],
             ['name' => 'Ubaid Employee', 'email' => 'ubaid+employee@gmail.com', 'role' => UserRole::EMPLOYEE],
         ] as $account) {
-            $user = User::updateOrCreate(
+            $user = User::firstOrCreate(
                 ['email' => $account['email']],
                 [
                     'name' => $account['name'],
@@ -77,10 +77,6 @@ class DatabaseSeeder extends Seeder
             ['name' => 'OUD Square', 'location' => 'Riyadh, Saudi Arabia', 'type' => 'Mixed use', 'total_units' => 38, 'description' => 'A connected mixed-use destination in the OUD portfolio.'],
             ['name' => 'OUD Dunes', 'location' => 'Riyadh, Saudi Arabia', 'type' => 'Hospitality', 'total_units' => 26, 'description' => 'A hospitality property with seasonal operating activity.'],
         ])->mapWithKeys(fn (array $attributes) => [$attributes['name'] => Property::updateOrCreate(['name' => $attributes['name']], $attributes)]);
-
-        foreach ($landlords as $landlord) {
-            $landlord->properties()->syncWithoutDetaching($properties->pluck('id'));
-        }
 
         $reserve = $properties['OUD Reserve'];
         $square = $properties['OUD Square'];
@@ -142,6 +138,7 @@ class DatabaseSeeder extends Seeder
                 $approval + ['audience' => 'landlord', 'status' => 'pending', 'published_at' => now()],
             );
         }
+        $this->call(ClientTestingSeeder::class);
         $this->call(ReferenceWorkspaceSeeder::class);
     }
 }

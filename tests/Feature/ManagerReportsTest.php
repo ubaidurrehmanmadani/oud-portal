@@ -108,6 +108,35 @@ class ManagerReportsTest extends TestCase
         unset($data['can_submit_financial_reports']);
         $this->put(route('accounts.update', ['kind' => 'user', 'id' => $manager->id]), $data)->assertSessionHasNoErrors();
         $this->assertFalse($manager->fresh()->canSubmitFinancialReports());
+        $this->assertCount(1, $manager->fresh()->properties);
+        $this->actingAs($manager->fresh())->get(route('manager.reports.create'))->assertForbidden();
+        $this->actingAs($admin)->get(route('accounts.edit', ['kind' => 'user', 'id' => $manager->id]))
+            ->assertOk()->assertViewHas('record', fn ($record) => $record->properties->contains($property));
+        $data['properties'] = [];
+        $this->put(route('accounts.update', ['kind' => 'user', 'id' => $manager->id]), $data)->assertSessionHasNoErrors();
+        $this->assertCount(0, $manager->fresh()->properties);
+    }
+
+    public function test_admin_created_manager_retains_properties_without_reporting_permission(): void
+    {
+        $admin = User::factory()->create(['role' => UserRole::ADMIN]);
+        $department = Department::create(['name' => 'Assigned team']);
+        $property = Property::create(['name' => 'Assigned property']);
+        $this->actingAs($admin)->post(route('content.store'), [
+            'kind' => 'user', 'name' => 'Assigned manager', 'email' => 'assigned@example.com',
+            'password' => 'TestPassword123', 'role' => 'department_manager',
+            'department_id' => $department->id, 'properties' => [$property->id],
+        ])->assertSessionHasNoErrors();
+        $manager = User::where('email', 'assigned@example.com')->firstOrFail();
+        $this->assertTrue($manager->properties->contains($property));
+        $this->assertFalse($manager->canSubmitFinancialReports());
+        $this->get(route('accounts.edit', ['kind' => 'user', 'id' => $manager->id]))
+            ->assertOk()->assertViewHas('record', fn ($record) => $record->properties->contains($property));
+        $this->actingAs($manager)->get(route('manager.reports.create'))->assertForbidden();
+        $this->actingAs($admin)->put(route('accounts.update', ['kind' => 'user', 'id' => $manager->id]), [
+            'name' => $manager->name, 'email' => $manager->email, 'role' => 'employee',
+            'department_id' => $department->id, 'properties' => [$property->id],
+        ])->assertSessionHasNoErrors();
         $this->assertCount(0, $manager->fresh()->properties);
     }
 

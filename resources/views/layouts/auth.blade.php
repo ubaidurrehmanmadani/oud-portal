@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ $title ?? 'OUD Portal' }}</title>
     <link rel="stylesheet" href="{{ asset('oud/styles.css') }}">
+    @include('partials.select-assets')
     <link rel="stylesheet" href="{{ asset('oud/application.css') }}">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Aboreto&family=Noto+Sans+Arabic:wght@400;500;600;700;800&family=Poppins:wght@400;500;600;700;800&display=swap">
 </head>

@@ -80,3 +80,28 @@ html[dir=rtl] .reporting .portal{grid-template-columns:minmax(0,1fr) 260px}
     .auth-shell-login .demo-access-password{margin-top:6px;padding-top:6px}
     .auth-shell-login .language-switcher .language-button{font-size:13px;padding:10px 12px}
 }
+
+/* Shared searchable selects, including multi-value assignments and RTL forms. */
+.content-form .field{min-width:0;align-content:start}
+.select2-container{max-width:100%;min-width:0;font-family:Poppins,Arial,sans-serif;font-size:14px;text-align:start}
+html[dir=rtl] .select2-container{font-family:"Noto Sans Arabic",Tahoma,Arial,sans-serif}
+.select2-container--default .select2-selection--single,.select2-container--default .select2-selection--multiple{min-height:54px;height:auto;border:1px solid #B5A48D;border-radius:8px;background:#F3EBDD;color:#1C1C1C}
+.select2-container--default .select2-selection--single{display:flex;align-items:center;padding:10px 16px;padding-inline-end:38px}
+.select2-container--default .select2-selection--single .select2-selection__rendered{padding:0;color:#1C1C1C;line-height:1.5;white-space:normal;overflow-wrap:anywhere}
+.select2-container--default .select2-selection--single .select2-selection__arrow{height:100%;top:0;right:10px}
+.select2-container--default[dir=rtl] .select2-selection--single .select2-selection__arrow{right:auto;left:10px}
+.select2-container--default .select2-selection--multiple{padding:8px 12px}
+.select2-container--default .select2-selection--multiple .select2-selection__rendered{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:0;margin:0;list-style:none}
+.select2-container--default .select2-selection--multiple .select2-selection__choice{float:none;display:flex;align-items:baseline;gap:6px;max-width:100%;margin:0;padding:4px 8px;border:1px solid #B5A48D;border-radius:6px;background:#e6dece;color:#363c30;white-space:normal;overflow-wrap:anywhere}
+.select2-container--default .select2-selection--multiple .select2-selection__choice__remove{color:#5E6655;margin:0;padding-inline:3px;font-size:18px;line-height:1;flex:none}
+.select2-container .select2-search--inline{float:none;max-width:100%;flex:1 1 100px}
+.select2-container .select2-search--inline .select2-search__field{height:34px;min-height:0;max-width:100%;margin:0;padding:0;border:0;border-radius:0;background:transparent;font:inherit;box-shadow:none;outline:none}
+.select2-container--default.select2-container--focus .select2-selection--multiple,.select2-container--default.select2-container--open .select2-selection,.select2-container--default .select2-selection:focus{border-color:#8A7155;outline:none;box-shadow:0 0 0 4px rgb(181 164 141 / .24)}
+.select2-dropdown{border:1px solid #B5A48D;background:#F3EBDD;color:#1C1C1C;border-radius:8px;box-shadow:0 8px 24px rgb(28 28 28 / .12)}
+.select2-container--default .select2-search--dropdown .select2-search__field{height:42px;border:1px solid #B5A48D;border-radius:6px;background:#F3EBDD;padding:8px 12px;font:inherit;outline-color:#8A7155}
+.select2-results__option{padding:10px 14px;overflow-wrap:anywhere}
+.select2-container--default .select2-results__option[aria-selected=true]{background:#e6dece}
+.select2-container--default .select2-results__option--highlighted[aria-selected]{background:#5E6655;color:#F3EBDD}
+.select2-container--default.select2-container--disabled .select2-selection{opacity:.65;background:#e6dece;cursor:not-allowed}
+.workspace-filters>.select2-container{flex:1 1 180px;width:auto!important}
+@media print{.select2-container--open .select2-dropdown{display:none}}

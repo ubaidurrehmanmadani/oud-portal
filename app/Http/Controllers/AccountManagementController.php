@@ -58,7 +58,7 @@ class AccountManagementController extends Controller
             }
             $record->save();
             if ($kind === 'user') {
-                $record->properties()->sync($record->role === UserRole::LANDLORD || $record->canSubmitFinancialReports() ? ($data['properties'] ?? []) : []);
+                $record->properties()->sync(in_array($record->role, [UserRole::LANDLORD, UserRole::DEPARTMENT_MANAGER], true) ? ($data['properties'] ?? []) : []);
             } elseif ($kind === 'property') {
                 $managerIds = $record->users()->where('role', UserRole::DEPARTMENT_MANAGER)->pluck('users.id')->all();
                 $record->users()->sync(array_unique([...($data['landlords'] ?? []), ...$managerIds]));

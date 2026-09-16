@@ -27,10 +27,14 @@ class ContentController extends Controller
 
     public function index(Request $request)
     {
-        $this->authorizeManager($request);
+        abort_unless(in_array($request->user()->role, [UserRole::ADMIN, UserRole::DEPARTMENT_MANAGER], true), 403);
+        $needsDepartment = $request->user()->role === UserRole::DEPARTMENT_MANAGER && ! $request->user()->department_id;
+        $availableKinds = $request->user()->role === UserRole::ADMIN
+            ? [...self::KINDS, 'department', 'property', 'user']
+            : ($needsDepartment ? [] : array_keys(array_filter(['document' => 'manage_documents', 'training' => 'manage_training', 'announcement' => 'manage_announcements'], fn ($permission) => $request->user()->allows($permission))));
         $query = WorkspaceItem::with(['department', 'property'])->latest();
         if ($request->user()->role !== UserRole::ADMIN) {
-            $query->where('department_id', $request->user()->department_id)->where('audience', 'staff')->whereIn('kind', array_keys(array_filter(['document' => 'manage_documents', 'training' => 'manage_training', 'announcement' => 'manage_announcements'], fn ($permission) => $request->user()->allows($permission))));
+            $query->where('department_id', $request->user()->department_id)->where('audience', 'staff')->whereIn('kind', $availableKinds);
         }
 
         $filters = $request->validate(['q' => 'nullable|string|max:255', 'kind' => ['nullable', Rule::in(self::KINDS)], 'status' => ['nullable', Rule::in(['draft', 'published', 'pending', 'approved', 'rejected'])]]);
@@ -43,7 +47,7 @@ class ContentController extends Controller
             }
         }
 
-        return view('content.index', $this->context() + ['items' => $query->paginate(20)->withQueryString()]);
+        return view('content.index', $this->context() + ['items' => $query->paginate(20)->withQueryString(), 'availableKinds' => $availableKinds, 'needsDepartment' => $needsDepartment]);
     }
 
     public function create(Request $request)
@@ -232,7 +236,7 @@ class ContentController extends Controller
             $record = DB::transaction(function () use ($data) {
                 $user = User::create(collect($data)->except('properties')->all() + ['role_id' => Role::where('code', $data['role'])->value('id')]);
                 $user->profile()->create(['preferred_locale' => app()->getLocale(), 'timezone' => 'Asia/Riyadh']);
-                if ($user->role === UserRole::LANDLORD) {
+                if (in_array($user->role, [UserRole::LANDLORD, UserRole::DEPARTMENT_MANAGER], true)) {
                     $user->properties()->sync($data['properties'] ?? []);
                 }
 

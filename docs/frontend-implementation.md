@@ -81,6 +81,10 @@ Admins use **Account approval requests** (`/admin/users/account-requests`) to in
 
 ## Styles and interactions
 
+All selects in the authentication and workspace layouts use locally served Select2 4.0.13/jQuery 3.7.1 through `partials/select-assets.blade.php` and `public/oud/select-controls.js`. Multiple-value assignments use searchable removable selections; single-value fields retain their existing empty/default options. Native select names, options and server validation remain the form source of truth. English/Arabic direction and messages, labels, form resets and disabled fields are handled centrally. `data-native-select` opts a control out. Shared navigation destroys controls before replacing content and initializes the new controls afterward. Styling in `application.css` aligns fields at the top and provides matching 54px controls, wrapping selections and responsive filters. Deploy `public/oud/vendor/` with the application; no CDN is required.
+
+Local verification on 16 September: browser checks against isolated Blade-rendered account forms passed in English/Arabic at 1440px and 390px, covering multi-selection, chip removal, submitted array values, no control overflow and idempotent teardown/reinitialization. Both desktop directions were visually inspected. Focused application suite: 16 tests / 242 assertions passed; JavaScript syntax, Blade compilation and diff whitespace passed. These checks do not establish production deployment or assistive-technology acceptance.
+
 Maintain the five shared stylesheets, `application.css`, `application.js`, `password-eye.js` and images directly in `public/oud/`. Financial styles are enabled only on financial pages. Application CSS includes responsive, RTL and print adaptations.
 
 Application JavaScript progressively enhances internal GET navigation while preserving the sidebar/topbar. Direct navigation remains the fallback for unavailable JavaScript, downloads and expired sessions. Role dialogs support Escape/backdrop dismissal and focus restoration. Password controls provide localized accessible labels.
@@ -93,6 +97,12 @@ Text inputs and selects share the sign-up field styling (54px height, 8px corner
 For future changes, update the relevant integrated views/assets and server actions together, preserve role and assignment checks, and add migrations only for new persisted data. Check both locales, desktop/mobile layout, filters and saved workflows.
 
 ## Continuation — 16 September 2026
+
+Manage content now renders department-assignment guidance for an approved Manager without a department, instead of a bare 403. Such accounts receive an empty management list and no creation actions; create/edit/write authorization still requires department scope. Creation buttons follow individual content capability grants. Admin access remains available; Employee/Landlord and unapproved/suspended access remains denied. Local regression coverage checks bilingual guidance, no unassigned-draft leakage, assignment recovery, role boundaries and permission-aware actions.
+
+Manager property assignment persistence fix: Admin user creation and editing now retain selected properties for Department Managers independently of `can_submit_financial_reports`. Previously creation ignored Manager selections and editing cleared them when the reporting checkbox was off. Reporting endpoints still require the separate grant, department and property scope. Explicitly clearing selections removes assignments; changing to Employee/Admin clears property links. No migration or automatic grant of reporting access is involved.
+
+Owner acceptance testing is documented in `docs/testing-walkthrough.md` and linked from README. It maps the actual screens/actions to a sequential Admin → Manager → review → recipient walkthrough, with separate permission, lifecycle, queue and bilingual checks. It is a test procedure, not a claim of completed browser or production acceptance.
 
 The existing Admin/Manager additions are locally verified. `content/form.blade.php` provides announcement targeting; `content/account.blade.php` provides supported role permission overrides and links to `/admin/users/{user}/preview`. `manager/employees.blade.php` and `manager/employee.blade.php` implement delegated department-only employee administration at `/manager/employees`. The existing Admin Notifications route now renders private queue counts/failure metadata with password-confirmed, allowlisted retries at `/admin/queue/{uuid}/retry`. Controllers enforce role, capability and assignment checks; UI controls do not replace authorization.
 
