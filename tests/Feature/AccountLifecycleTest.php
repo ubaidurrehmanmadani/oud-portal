@@ -26,7 +26,9 @@ class AccountLifecycleTest extends TestCase
         $this->actingAs($user->fresh())->get('/dashboard/employee')->assertForbidden();
         $this->actingAs($admin)->post($url, ['action' => 'restore', 'current_password' => 'password'])->assertSessionHasNoErrors();
         $this->assertNull($user->fresh()->suspended_at);
-        $this->actingAs($user->fresh())->get('/dashboard/employee')->assertOk();
+        $this->actingAs($user->fresh())->get('/dashboard/employee')->assertRedirect(route('login'));
+        $this->post('/login', ['email' => $user->email, 'password' => 'password'])->assertSessionHasNoErrors();
+        $this->get('/dashboard/employee')->assertOk();
     }
 
     public function test_lifecycle_requires_admin_password_and_prevents_self_suspension(): void

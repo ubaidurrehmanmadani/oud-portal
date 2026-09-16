@@ -49,6 +49,9 @@ class AccountManagementController extends Controller
             }
             $record = $locked;
 
+            if ($kind === 'user' && $record->role->value !== $data['role']) {
+                $record->permission_overrides = null;
+            }
             $record->fill(collect($data)->except(['properties', 'landlords'])->all());
             if ($kind === 'user') {
                 $record->role_id = Role::where('code', $data['role'])->value('id');

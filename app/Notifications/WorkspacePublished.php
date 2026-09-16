@@ -34,7 +34,10 @@ class WorkspacePublished extends Notification implements ShouldQueue
     public function shouldSend($notifiable, string $channel): bool
     {
         return $notifiable->approval_status === 'approved' && $notifiable->suspended_at === null
-            && WorkspaceItem::visibleTo($notifiable)->whereKey($this->itemId)->exists();
+            && WorkspaceItem::visibleTo($notifiable)->whereKey($this->itemId)
+                ->whereIn('status', ['published', 'pending'])
+                ->where(fn ($q) => $q->whereNull('published_at')->orWhere('published_at', '<=', now()))
+                ->where(fn ($q) => $q->where('file_processing_required', false)->orWhereNotNull('file_processed_at'))->exists();
     }
 
     public function toMail($notifiable): MailMessage

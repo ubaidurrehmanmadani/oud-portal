@@ -52,6 +52,7 @@ class AuthenticatedSessionController extends Controller
         }
 
         $request->session()->regenerate();
+        $request->session()->put('auth_generation.'.Auth::id(), (int) Auth::user()->session_generation);
 
         /** @var User $user */
         $user = $request->user();

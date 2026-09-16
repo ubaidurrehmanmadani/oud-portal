@@ -118,6 +118,8 @@ The login credentials card is temporarily enabled in production as well as local
 
 ## Backend delivery and user manuals
 
+Latest continuation (16 September 2026): targeted announcements, Admin-managed Manager/Landlord permission overrides, delegated department employee management, visible-content previews, queue failure monitoring/retries and session revocation are implemented locally. The two 15 September migrations are applied to local MySQL. See the latest entry in [the backend delivery ledger](docs/backend-delivery.md) for verification and remaining work; Laravel Cloud deployment is not verified.
+
 Backend work follows actual role order, beginning with administrator setup and access. Owner instructions, queue architecture, completed chunks, tests and remaining work are tracked in [the backend delivery ledger](docs/backend-delivery.md).
 
 User guides are maintained in [English (PDF)](docs/manuals/user-manual-en.pdf) and [Arabic (PDF)](docs/manuals/user-manual-ar.pdf), with editable HTML sources and application HTML previews in `docs/manuals/`. They describe completed workflows only. Screen previews reuse Blade HTML at build time; no separate screenshot library is kept. Delivery follows the five-day plan in the backend ledger.

@@ -28,12 +28,13 @@
                         @foreach ($properties as $property)<a href="{{ route('landlord.financials', $property) }}" @if(request()->routeIs('landlord.financials') && $selectedProperty?->id === $property->id) aria-current="page" @endif>{{ $property->name }}</a>@endforeach
                     </div>
                 @endif
-                @foreach ($isLandlord ? ['properties', 'reports', 'documents', 'approvals'] : ['documents', 'training', 'announcements', 'search'] as $navSection)
+                @foreach ($isLandlord ? ['properties', 'reports', 'documents', 'approvals', 'announcements'] : ['documents', 'training', 'announcements', 'search'] as $navSection)
                     <a class="{{ ($section ?? '') === $navSection ? 'active' : '' }}" href="{{ route($isLandlord ? 'landlord.index' : 'staff.index', ['section' => $navSection]) }}">{{ __('workspace.'.$navSection) }}</a>
                 @endforeach
                 @if (in_array(auth()->user()->role, [\App\Enums\UserRole::ADMIN, \App\Enums\UserRole::DEPARTMENT_MANAGER]))
                     <a href="{{ route('content.index') }}">{{ __('workspace.manage_content') }}</a>
                 @endif
+                @if(auth()->user()->role === \App\Enums\UserRole::DEPARTMENT_MANAGER && auth()->user()->allows('manage_employees'))<a href="{{ route('manager.employees.index') }}">{{ __('permissions.manage_employees') }}</a>@endif
                 @if (auth()->user()->canSubmitFinancialReports())
                     <a class="{{ request()->routeIs('manager.reports.*') ? 'active' : '' }}" href="{{ route('manager.reports.index') }}">{{ __('portal.manager_reports') }}</a>
                 @endif

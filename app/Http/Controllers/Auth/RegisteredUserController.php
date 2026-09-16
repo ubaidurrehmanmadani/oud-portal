@@ -62,6 +62,7 @@ class RegisteredUserController extends Controller
         Auth::login($user);
 
         $request->session()->regenerate();
+        $request->session()->put('auth_generation.'.Auth::id(), (int) Auth::user()->session_generation);
 
         return redirect()->route($user->dashboardRouteName());
     }

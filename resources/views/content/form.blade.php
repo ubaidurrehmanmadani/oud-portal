@@ -1,6 +1,9 @@
 @extends('layouts.workspace')
 @section('content')
 <section class="hero"><div><p class="eyebrow">{{ __('workspace.manage_content') }}</p><h1>{{ isset($record) ? __('workspace.edit') : __('workspace.create') }} · {{ $kind === 'user' ? __('portal.user') : __('workspace.'.$kind) }}</h1></div></section>
+@if($kind === 'announcement' && auth()->user()->role === \App\Enums\UserRole::ADMIN)
+<form method="GET" class="workspace-filters"><input type="hidden" name="kind" value="announcement"><label for="recipient_search">{{ __('targeting.search') }}</label><input id="recipient_search" name="recipient_search" maxlength="100" value="{{ request('recipient_search') }}"><button class="button button-secondary">{{ __('workspace.search') }}</button><p>{{ __('targeting.search_help') }}</p></form>
+@endif
 <section class="card">
 <form method="POST" action="{{ isset($record) ? route('content.update', $record) : route('content.store') }}" enctype="multipart/form-data" class="content-form">
     @csrf
@@ -31,6 +34,12 @@
             <div class="field"><label for="department_id">{{ __('workspace.department') }}</label><select id="department_id" name="department_id"><option value="">{{ __('workspace.all_departments') }}</option>@foreach ($departments as $department)<option value="{{ $department->id }}" @selected(old('department_id', $record->department_id ?? '') == $department->id)>{{ $department->name }}</option>@endforeach</select></div>
             <div class="field"><label for="property_id">{{ __('workspace.property') }}</label><select id="property_id" name="property_id" @required(in_array($kind, ['report', 'approval']))><option value="">{{ __('workspace.none') }}</option>@foreach ($availableProperties as $property)<option value="{{ $property->id }}" @selected(old('property_id', $record->property_id ?? '') == $property->id)>{{ $property->name }}</option>@endforeach</select></div>
         @else<input type="hidden" name="audience" value="staff">@endif
+        @if ($kind === 'announcement' && auth()->user()->role === \App\Enums\UserRole::ADMIN)
+        <div class="field wide"><label for="target_mode">{{ __('targeting.title') }}</label><select id="target_mode" name="target_mode">@foreach(['legacy','all','users','departments','properties'] as $mode)<option value="{{ $mode }}" @selected(old('target_mode', $record->target_mode ?? 'legacy') === $mode)>{{ __('targeting.'.$mode) }}</option>@endforeach</select><p>{{ __('targeting.help') }}</p></div>
+        @foreach(['users'=>[$targetableUsers,'targetUsers'], 'departments'=>[$departments,'targetDepartments'], 'properties'=>[$availableProperties,'targetProperties']] as $group => [$options,$relation])
+        <div class="field"><label for="target_{{ $group }}">{{ __('targeting.'.$group) }}</label><select id="target_{{ $group }}" name="target_{{ $group }}[]" multiple>@foreach($options as $option)<option value="{{ $option->id }}" @selected(in_array($option->id, old('target_'.$group, isset($record) ? $record->$relation->modelKeys() : [])))>{{ $option->name }}{{ $group === 'users' ? ' · '.$option->email : '' }}</option>@endforeach</select></div>
+        @endforeach
+        @endif
         <div class="field"><label for="published_at">{{ __('workspace.published_at') }}</label><input id="published_at" name="published_at" type="datetime-local" value="{{ old('published_at', isset($record) ? $record->published_at?->format('Y-m-d\TH:i') : '') }}"></div>
         <div class="field"><label for="file">{{ __('workspace.file') }}</label><input type="file" id="file" name="file">@if (isset($record) && $record->file_name)<small>{{ $record->file_name }}</small>@endif</div>
         @if ($kind === 'report')

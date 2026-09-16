@@ -92,12 +92,20 @@ Text inputs and selects share the sign-up field styling (54px height, 8px corner
 
 For future changes, update the relevant integrated views/assets and server actions together, preserve role and assignment checks, and add migrations only for new persisted data. Check both locales, desktop/mobile layout, filters and saved workflows.
 
+## Continuation — 16 September 2026
+
+The existing Admin/Manager additions are locally verified. `content/form.blade.php` provides announcement targeting; `content/account.blade.php` provides supported role permission overrides and links to `/admin/users/{user}/preview`. `manager/employees.blade.php` and `manager/employee.blade.php` implement delegated department-only employee administration at `/manager/employees`. The existing Admin Notifications route now renders private queue counts/failure metadata with password-confirmed, allowlisted retries at `/admin/queue/{uuid}/retry`. Controllers enforce role, capability and assignment checks; UI controls do not replace authorization.
+
+Migrations `2026_09_15_230000_add_announcement_targets_and_permissions` and `2026_09_15_231000_add_session_generation` are applied to local MySQL. They add announcement target relations, permission overrides and persistent session revocation generations. Include both migrations and version 5 EN/AR manuals in deployment. Existing announcement targeting defaults to legacy scope.
+
+Verification: full local suite 87 tests / 2,646 assertions; subsequent queue connection/table fix passed 3 focused tests / 17 assertions. Formatting, Blade compilation and manual-renderer JavaScript syntax passed. Production deployment, external queue retries, live mail delivery and MySQL concurrency remain unverified. See the latest backend ledger entry for the next scope and operational limits.
+
 ## Material limitations
 
 - Original binary contracts, proposals and the source workbook were not supplied. Bundled text is exported into valid, clearly labelled PDF/XLSX previews, not represented as original attachments. Administrator-uploaded files are retained.
 - Optima/Swissra font files are not bundled. Readable fallbacks are available; Poppins and Noto Sans Arabic are requested from Google Fonts.
 - External/Odoo synchronization and notification delivery are not configured. Status pages do not claim these services are active.
-- General custom permission overrides and Admin financial review/publication are not implemented. The manager-specific financial submission grant is implemented as described above.
+- Supported Manager/Landlord capability overrides and Admin financial review/publication are implemented. Arbitrary user-defined permissions are not supported; the manager-specific financial submission grant remains separate.
 
 ## Verification and deployment
 
@@ -160,3 +168,13 @@ Today's fixes preserve/show all approved management figures, dispatch notificati
 ## In-product manual access — 15 September 2026
 
 All four role sidebars now include **User manual / دليل المستخدم**. `/help/manuals` offers English and Arabic open/download actions; `/help/manuals/en.pdf` and `/help/manuals/ar.pdf` serve the existing PDFs, with `?download=1` for attachment download. Authentication, account approval and suspension middleware protect the page and files. Locale allowlisting fixes file paths; responses use private/no-store caching and nosniff. No copying to public storage or PDF generation occurs on requests. Deploy `docs/manuals/user-manual-en.pdf` and `docs/manuals/user-manual-ar.pdf` with the application. Missing packaged PDFs return 404.
+
+## Unused account removal — 15 September 2026
+
+The existing `accounts.lifecycle` POST accepts `delete` with Admin password and explicit confirmation. `RemoveUnusedUser` blocks active/assigned/history-bearing accounts, removes unused profiles via the existing FK and deletes recovery tokens. Account deletion and the audit record share the lifecycle transaction. A separate EN/AR section on the user edit page appears for suspended accounts; after deletion navigation returns to Users. No new migration or real user deletion was required. Both manuals document the retention rule and action; production verification remains outstanding.
+
+Removal verification: 78-test full suite passed before the additional approval-history guard; the final focused five-test suite passes with that guard. It covers successful unused-account cleanup, Admin/current-password/confirmation checks, login/assignment/approval-history retention and transaction rollback when auditing fails. PDF manuals now have eleven pages each; no migration was required.
+
+## Separate PDF view/download actions — 15 September 2026
+
+The manual page retains separate buttons for each language. The viewing button is now explicitly labelled **View PDF in new tab** / **عرض PDF في علامة تبويب جديدة**, targets a new tab with noopener, and receives an explicit inline Content-Disposition. The separate download action retains attachment delivery. Existing navigation JavaScript bypasses target/download links. Focused manual tests check new-tab links and inline/attachment responses for all four roles and both locales.

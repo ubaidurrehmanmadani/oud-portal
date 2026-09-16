@@ -28,6 +28,6 @@ class UserManualController extends Controller
 
         return $request->boolean('download')
             ? response()->download($path, 'oud-user-manual-'.$locale.'.pdf', $headers)
-            : response()->file($path, $headers);
+            : response()->file($path, $headers + ['Content-Disposition' => 'inline; filename="oud-user-manual-'.$locale.'.pdf"']);
     }
 }

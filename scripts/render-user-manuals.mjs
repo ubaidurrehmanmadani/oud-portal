@@ -35,8 +35,9 @@ try {
         await new Promise(r => setTimeout(r, 700));
         await call('Runtime.evaluate', {expression: `(() => { const pages = ${JSON.stringify(screens)}; document.querySelectorAll('iframe[data-screen]').forEach(f => { f.srcdoc = pages[f.dataset.screen]; }); })()`});
         await new Promise(r => setTimeout(r, 2000));
-        await call('Runtime.evaluate', {expression: `document.querySelectorAll('iframe[data-screen$="-edit"]').forEach(f => { f.contentDocument.querySelectorAll('.hero, .card:has(input[name="_method"])').forEach(el => el.remove()); f.contentWindow.scrollTo(0, 0); })`});
+        await call('Runtime.evaluate', {expression: `document.querySelectorAll('iframe[data-screen$="-edit"], iframe[data-screen$="-permissions"]').forEach(f => { f.contentDocument.querySelectorAll('.hero, .card:has(input[name="_method"])').forEach(el => el.remove()); f.contentWindow.scrollTo(0, 0); })`});
         await call('Runtime.evaluate', {expression: `document.querySelectorAll('iframe[data-screen$="-report-reviews"]').forEach(f => { f.contentDocument.querySelectorAll('.hero, form.workspace-filters').forEach(el => el.remove()); f.contentWindow.scrollTo(0, 0); })`});
+        await call('Runtime.evaluate', {expression: `document.querySelectorAll('iframe[data-screen$="-targeting"]').forEach(f => { f.contentDocument.querySelector('.hero')?.remove(); f.contentDocument.querySelectorAll('form[method="POST"] .field').forEach(el => { if (!el.querySelector('[id^="target_"]')) el.remove(); }); })`});
         const readiness = await call('Runtime.evaluate', {expression: 'document.readyState === "complete" && Array.from(document.querySelectorAll("iframe[data-screen]")).every(f => f.contentDocument?.readyState === "complete" && f.contentDocument.body.innerText.length > 100)'});
         if (!readiness.result.value) throw new Error(`${locale}: screen HTML not loaded ${JSON.stringify(readiness)}`);
         const overflow = await call('Runtime.evaluate', {expression: 'Array.from(document.querySelectorAll(".page")).some(p => p.scrollHeight > p.clientHeight)'});

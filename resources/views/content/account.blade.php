@@ -19,6 +19,15 @@
     <div class="wide"><button class="button button-primary">{{ __('workspace.save') }}</button></div>
 </form></section>
 @if ($kind === 'user')
+<p><a class="button button-secondary" href="{{ route('admin.users.preview',$record) }}">{{ __('permissions.preview') }}</a></p>
+@if($record->capabilityDefaults())
+<section class="card"><h2>{{ __('permissions.title') }}</h2><p>{{ __('permissions.help') }}</p>
+<form method="POST" action="{{ route('admin.users.permissions',$record) }}" class="content-form">@csrf
+@foreach($record->capabilityDefaults() as $capability => $default)
+<div class="field"><label for="override_{{ $capability }}">{{ __('permissions.'.$capability) }}</label><select id="override_{{ $capability }}" name="overrides[{{ $capability }}]"><option value="">{{ __('permissions.default') }} ({{ __('permissions.'.($default ? 'allow' : 'deny')) }})</option>@foreach(['1'=>'allow','0'=>'deny'] as $value => $label)<option value="{{ $value }}" @selected(array_key_exists($capability,$record->permission_overrides ?? []) && (int)$record->permission_overrides[$capability] === (int)$value)>{{ __('permissions.'.$label) }}</option>@endforeach</select></div>
+@endforeach
+<div class="field"><label for="permissions_password">{{ __('lifecycle.password') }}</label><input id="permissions_password" name="current_password" type="password" required autocomplete="current-password"></div><button class="button button-primary">{{ __('workspace.save') }}</button></form></section>
+@endif
 <section class="card">
     <h2>{{ __('lifecycle.title') }}</h2>
     <p>{{ __('lifecycle.help') }}</p>
@@ -36,6 +45,15 @@
         </div>
     </form>
 </section>
+@endif
+@if ($kind === 'user' && $record->suspended_at && $record->id !== auth()->id())
+<section class="card"><h2>{{ __('lifecycle.delete') }}</h2><p>{{ __('lifecycle.delete_help') }}</p>
+<form method="POST" action="{{ route('accounts.lifecycle', $record->id) }}" class="content-form">@csrf
+<input type="hidden" name="action" value="delete">
+<div class="field"><label for="delete_password">{{ __('lifecycle.password') }}</label><input id="delete_password" type="password" name="current_password" required autocomplete="current-password"></div>
+<div class="field wide"><label><input type="checkbox" name="confirm_delete" value="1" required> {{ __('lifecycle.confirm_delete') }}</label></div>
+<button class="button button-secondary">{{ __('lifecycle.delete') }}</button>
+</form></section>
 @endif
 @if (in_array($kind, ['department', 'property']))
 <section class="card"><h2>{{ __('setup.title') }}</h2><p>{{ __('setup.help') }}</p>

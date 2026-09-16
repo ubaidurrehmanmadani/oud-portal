@@ -25,14 +25,14 @@ $employee = User::create(['name' => 'Example Employee', 'email' => 'employee@exa
 $department = Department::create(['name' => 'Property Management']);
 $property = Property::create(['name' => 'Example Property']);
 $manager = User::create(['name' => 'Example Manager', 'email' => 'manager@example.com', 'password' => Str::random(40), 'role' => 'department_manager', 'department_id' => $department->id]);
-$manager->forceFill(['can_submit_financial_reports' => true])->save();
+$manager->forceFill(['can_submit_financial_reports' => true, 'permission_overrides' => ['manage_employees' => true]])->save();
 $manager->properties()->attach($property);
 ReportSubmission::create(['user_id' => $manager->id, 'department_id' => $department->id, 'property_id' => $property->id, 'title' => 'Example monthly report', 'report_month' => '2026-09-01', 'status' => 'pending', 'submitted_at' => now(), 'file_path' => 'report-submissions/manual-example.pdf', 'file_name' => 'example.pdf', 'metrics' => ['occupancy' => 80, 'gross_revenue' => 50000, 'net_revenue' => 40000, 'rent' => 30000]]);
 Auth::login($admin);
 view()->share('errors', new ViewErrorBag);
 foreach (['en', 'ar'] as $locale) {
     app()->setLocale($locale);
-    foreach (['login', '/admin/users/account-requests', '/admin/departments/view-departments', '/admin/properties/view-properties', '/accounts/user/'.$employee->id.'/edit', '/manager/reports', '/manager/reports/upload', '/admin/report-reviews'] as $path) {
+    foreach (['login', '/admin/users/account-requests', '/admin/departments/view-departments', '/admin/properties/view-properties', '/accounts/user/'.$employee->id.'/edit', '/manager/reports', '/manager/reports/upload', '/admin/report-reviews', '/accounts/user/'.$manager->id.'/edit', '/content/create?kind=announcement', '/manager/employees', '/admin/notifications/view-notifications'] as $path) {
         $actor = str_starts_with($path, '/manager/') ? $manager : $admin;
         Auth::login($actor);
         $request = Request::create('/'.ltrim($path, '/'));
@@ -51,7 +51,8 @@ foreach (['en', 'ar'] as $locale) {
         $html = preg_replace('~https?://localhost(?::[0-9]+)?/~', 'file://'.public_path().'/', $html);
         $html = preg_replace('~<script\b[^>]*>.*?</script>~is', '', $html);
         $html = preg_replace('~<link[^>]+href=[\"\']https://[^>]+>~i', '', $html);
-        $pages[$locale.'-'.basename($path)] = $html;
+        $key = $path === '/accounts/user/'.$manager->id.'/edit' ? 'permissions' : ($path === '/content/create?kind=announcement' ? 'targeting' : basename($path));
+        $pages[$locale.'-'.$key] = $html;
     }
 }
 

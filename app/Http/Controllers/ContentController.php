@@ -30,7 +30,7 @@ class ContentController extends Controller
         $this->authorizeManager($request);
         $query = WorkspaceItem::with(['department', 'property'])->latest();
         if ($request->user()->role !== UserRole::ADMIN) {
-            $query->where('department_id', $request->user()->department_id)->where('audience', 'staff')->whereIn('kind', ['document', 'training', 'announcement']);
+            $query->where('department_id', $request->user()->department_id)->where('audience', 'staff')->whereIn('kind', array_keys(array_filter(['document' => 'manage_documents', 'training' => 'manage_training', 'announcement' => 'manage_announcements'], fn ($permission) => $request->user()->allows($permission))));
         }
 
         $filters = $request->validate(['q' => 'nullable|string|max:255', 'kind' => ['nullable', Rule::in(self::KINDS)], 'status' => ['nullable', Rule::in(['draft', 'published', 'pending', 'approved', 'rejected'])]]);
@@ -52,6 +52,10 @@ class ContentController extends Controller
         $kind = $request->query('kind', 'document');
         abort_unless(in_array($kind, $request->user()->role === UserRole::ADMIN ? [...self::KINDS, 'department', 'property', 'user'] : ['document', 'training', 'announcement'], true), 403);
 
+        if ($request->user()->role !== UserRole::ADMIN) {
+            abort_unless($request->user()->allows(['document' => 'manage_documents', 'training' => 'manage_training', 'announcement' => 'manage_announcements'][$kind] ?? ''), 403);
+        }
+
         return view('content.form', $this->formData($kind));
     }
 
@@ -59,7 +63,7 @@ class ContentController extends Controller
     {
         $record = $this->editable($request, $item);
 
-        return view('content.form', $this->formData($record->kind) + ['record' => $record]);
+        return view('content.form', $this->formData($record->kind, $record) + ['record' => $record]);
     }
 
     public function destroy(Request $request, int $item)
@@ -107,6 +111,7 @@ class ContentController extends Controller
         $isAdmin = $request->user()->role === UserRole::ADMIN;
         abort_unless($isAdmin || in_array($kind, ['document', 'training', 'announcement']), 403);
         if (! $isAdmin) {
+            abort_unless($request->user()->allows(['document' => 'manage_documents', 'training' => 'manage_training', 'announcement' => 'manage_announcements'][$kind] ?? ''), 403);
             abort_if($request->user()->department?->archived_at !== null, 403);
         }
         $data = $request->validate([
@@ -120,6 +125,24 @@ class ContentController extends Controller
             'file' => 'nullable|file|max:51200|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx,jpg,jpeg,png,mp4,zip,txt',
         ]);
         unset($data['file']);
+        $targetData = [];
+        if ($isAdmin && $kind === 'announcement') {
+            $targetData = $request->validate([
+                'target_mode' => ['nullable', Rule::in(['legacy', 'all', 'users', 'departments', 'properties'])],
+                'target_users' => 'required_if:target_mode,users|array|max:500', 'target_users.*' => 'integer|distinct|exists:users,id',
+                'target_departments' => 'required_if:target_mode,departments|array|max:500', 'target_departments.*' => 'integer|distinct|exists:departments,id',
+                'target_properties' => 'required_if:target_mode,properties|array|max:500', 'target_properties.*' => 'integer|distinct|exists:properties,id',
+            ]);
+            $data['target_mode'] = $targetData['target_mode'] ?? 'legacy';
+            if ($data['target_mode'] !== 'legacy') {
+                $data['audience'] = 'staff';
+                $data['department_id'] = null;
+                $data['property_id'] = null;
+            }
+        } elseif ($request->filled('target_mode') && $request->input('target_mode') !== 'legacy') {
+            abort(403);
+        }
+
         if ($kind === 'report') {
             $data = array_merge($data, $this->financialData($request, $record));
         }
@@ -148,10 +171,16 @@ class ContentController extends Controller
             $data['file_name'] = basename($request->file('file')->getClientOriginalName());
         }
         try {
-            DB::transaction(function () use ($record, $data, $kind, $request, $notifyPublication) {
+            DB::transaction(function () use ($record, $data, $kind, $request, $notifyPublication, $targetData, &$oldPath) {
                 if ($record->exists) {
                     $locked = WorkspaceItem::lockForUpdate()->findOrFail($record->id);
                     abort_if($kind === 'approval' && $locked->status !== 'pending', 409);
+                    if ($request->user()->role !== UserRole::ADMIN) {
+                        abort_unless($locked->department_id === $request->user()->department_id && $locked->audience === 'staff', 403);
+                    }
+                    $record = $locked;
+                    $oldPath = $locked->file_path;
+                    $notifyPublication = $locked->status === 'draft';
                 }
                 $record->fill($data);
                 $record->kind = $kind;
@@ -159,10 +188,15 @@ class ContentController extends Controller
                     $record->created_by = $request->user()->id;
                 }
                 $record->save();
+                if ($kind === 'announcement' && $request->user()->role === UserRole::ADMIN) {
+                    $record->targetUsers()->sync($record->target_mode === 'users' ? ($targetData['target_users'] ?? []) : []);
+                    $record->targetDepartments()->sync($record->target_mode === 'departments' ? ($targetData['target_departments'] ?? []) : []);
+                    $record->targetProperties()->sync($record->target_mode === 'properties' ? ($targetData['target_properties'] ?? []) : []);
+                }
                 if ($record->file_processing_required && ! $record->file_processed_at) {
                     ProcessPrivateUpload::dispatch('workspace', $record->id, $record->file_path);
                 }
-                if ((! $record->file_processing_required || $record->file_processed_at) && $notifyPublication && in_array($kind, ['document', 'report', 'approval']) && in_array($record->status, ['published', 'pending'])) {
+                if ((! $record->file_processing_required || $record->file_processed_at) && $notifyPublication && in_array($kind, ['document', 'report', 'approval', 'announcement']) && in_array($record->status, ['published', 'pending'])) {
                     NotifyWorkspacePublication::dispatch($record->id)->delay($record->published_at ?? now());
                 }
                 AuditEvent::create(['user_id' => $request->user()->id, 'event' => 'content.saved:'.$record->id, 'ip_address' => $request->ip(), 'user_agent' => substr((string) $request->userAgent(), 0, 500)]);
@@ -258,7 +292,7 @@ class ContentController extends Controller
         $this->authorizeManager($request);
         $query = WorkspaceItem::query();
         if ($request->user()->role !== UserRole::ADMIN) {
-            $query->where('department_id', $request->user()->department_id)->where('audience', 'staff')->whereIn('kind', ['document', 'training', 'announcement']);
+            $query->where('department_id', $request->user()->department_id)->where('audience', 'staff')->whereIn('kind', array_keys(array_filter(['document' => 'manage_documents', 'training' => 'manage_training', 'announcement' => 'manage_announcements'], fn ($permission) => $request->user()->allows($permission))));
         }
 
         return $query->findOrFail($item);
@@ -269,9 +303,22 @@ class ContentController extends Controller
         abort_unless($request->user()->role === UserRole::ADMIN || ($request->user()->role === UserRole::DEPARTMENT_MANAGER && $request->user()->department_id), 403);
     }
 
-    private function formData(string $kind): array
+    private function formData(string $kind, ?WorkspaceItem $record = null): array
     {
-        return $this->context() + ['kind' => $kind, 'departments' => Department::orderBy('name')->get(), 'availableProperties' => Property::orderBy('name')->get(), 'landlords' => User::where('role', UserRole::LANDLORD)->orderBy('name')->get()];
+        return $this->context() + ['kind' => $kind, 'departments' => Department::orderBy('name')->get(), 'availableProperties' => Property::orderBy('name')->get(), 'landlords' => User::where('role', UserRole::LANDLORD)->orderBy('name')->get(), 'targetableUsers' => auth()->user()->role === UserRole::ADMIN && $kind === 'announcement' ? $this->targetableUsers($record) : collect()];
+    }
+
+    private function targetableUsers(?WorkspaceItem $record)
+    {
+        $data = request()->validate(['recipient_search' => 'nullable|string|max:100']);
+        $query = User::query();
+        if ($term = $data['recipient_search'] ?? null) {
+            $query->where(fn ($q) => $q->where('name', 'like', '%'.$term.'%')->orWhere('email', 'like', '%'.$term.'%'));
+        }
+        $users = $query->orderBy('name')->limit(100)->get(['id', 'name', 'email']);
+        $selected = $record?->targetUsers()->get(['users.id', 'users.name', 'users.email']) ?? collect();
+
+        return $users->merge($selected)->unique('id')->sortBy('name');
     }
 
     private function context(): array

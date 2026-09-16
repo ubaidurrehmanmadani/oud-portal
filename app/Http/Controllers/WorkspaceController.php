@@ -54,10 +54,10 @@ class WorkspaceController extends Controller
     {
         $data = $this->context($request);
         $landlord = $data['isLandlord'];
-        abort_unless(in_array($section, $landlord ? ['properties', 'reports', 'documents', 'approvals'] : ['documents', 'training', 'announcements', 'search'], true), 404);
+        abort_unless(in_array($section, $landlord ? ['properties', 'reports', 'documents', 'approvals', 'announcements'] : ['documents', 'training', 'announcements', 'search'], true), 404);
         $request->validate(['q' => 'nullable|string|max:200', 'category' => 'nullable|string|max:100', 'period' => 'nullable|string|max:100', 'sort' => ['nullable', Rule::in(['newest', 'oldest', 'title'])], 'status' => ['nullable', Rule::in(['published', 'pending', 'approved', 'rejected'])]]);
         $query = WorkspaceItem::visibleTo($request->user())->with(['property', 'department']);
-        if ($data['selectedProperty']) {
+        if ($data['selectedProperty'] && $section !== 'announcements') {
             $query->where('property_id', $data['selectedProperty']->id);
         }
         if ($section !== 'search') {
@@ -111,6 +111,7 @@ class WorkspaceController extends Controller
 
     public function download(Request $request, int $item)
     {
+        abort_if($request->user()->role === UserRole::LANDLORD && ! $request->user()->allows('download_files'), 403);
         $record = WorkspaceItem::visibleTo($request->user())->findOrFail($item);
         abort_unless($record->file_path && Storage::disk('local')->exists($record->file_path), 404);
 
@@ -119,6 +120,7 @@ class WorkspaceController extends Controller
 
     public function financials(Request $request, int $property)
     {
+        abort_if($request->user()->role === UserRole::LANDLORD && ! $request->user()->allows('view_reports'), 403);
         $data = $this->context($request);
         $isAdmin = $request->user()->role === UserRole::ADMIN;
         if ($isAdmin) {
@@ -148,6 +150,7 @@ class WorkspaceController extends Controller
 
     public function decide(Request $request, int $item)
     {
+        abort_unless($request->user()->allows('decide_approvals'), 403);
         abort_unless($request->user()->role === UserRole::LANDLORD, 403);
         $data = $request->validate(['decision' => ['required', Rule::in(['approved', 'rejected'])], 'comment' => 'nullable|string|max:5000']);
         DB::transaction(function () use ($request, $item, $data) {

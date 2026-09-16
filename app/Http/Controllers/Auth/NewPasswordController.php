@@ -37,6 +37,7 @@ class NewPasswordController extends Controller
                 $user->forceFill([
                     'password' => Hash::make($request->string('password')->toString()),
                     'remember_token' => Str::random(60),
+                    'session_generation' => $user->session_generation + 1,
                 ])->save();
 
                 LoginEvent::create([

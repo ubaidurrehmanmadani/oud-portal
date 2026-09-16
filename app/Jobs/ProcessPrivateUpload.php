@@ -55,7 +55,7 @@ class ProcessPrivateUpload implements ShouldQueue
                 return;
             }
             $record->forceFill(['file_sha256' => $digest, 'file_processed_at' => now()])->save();
-            if ($this->kind === 'workspace' && in_array($record->kind, ['document', 'report', 'approval']) && in_array($record->status, ['published', 'pending'])) {
+            if ($this->kind === 'workspace' && in_array($record->kind, ['document', 'report', 'approval', 'announcement']) && in_array($record->status, ['published', 'pending'])) {
                 NotifyWorkspacePublication::dispatch($record->id)->delay($record->published_at ?? now());
             }
         });

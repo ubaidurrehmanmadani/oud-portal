@@ -9,11 +9,14 @@ use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\ContentController;
+use App\Http\Controllers\DepartmentUserController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\ManagerReportController;
+use App\Http\Controllers\QueueOperationsController;
 use App\Http\Controllers\ReportReviewController;
 use App\Http\Controllers\SetupLifecycleController;
 use App\Http\Controllers\UserManualController;
+use App\Http\Controllers\UserPermissionController;
 use App\Http\Controllers\WorkspaceController;
 use Illuminate\Support\Facades\Route;
 
@@ -57,6 +60,11 @@ Route::middleware('auth')->group(function () {
     Route::put('/accounts/{kind}/{id}', [AccountManagementController::class, 'update'])->middleware('admin')->where('kind', 'user|property|department')->whereNumber('id')->name('accounts.update');
 
     Route::get('/content', [ContentController::class, 'index'])->name('content.index');
+    Route::get('/manager/employees', [DepartmentUserController::class, 'index'])->name('manager.employees.index');
+    Route::post('/manager/employees', [DepartmentUserController::class, 'store'])->middleware('throttle:20,1')->name('manager.employees.store');
+    Route::get('/manager/employees/{user}/edit', [DepartmentUserController::class, 'edit'])->whereNumber('user')->name('manager.employees.edit');
+    Route::put('/manager/employees/{user}', [DepartmentUserController::class, 'update'])->whereNumber('user')->name('manager.employees.update');
+    Route::post('/manager/employees/{user}/action', [DepartmentUserController::class, 'action'])->middleware('throttle:10,1')->whereNumber('user')->name('manager.employees.action');
     Route::get('/manager/reports', [ManagerReportController::class, 'index'])->name('manager.reports.index');
     Route::get('/manager/reports/upload', [ManagerReportController::class, 'create'])->name('manager.reports.create');
     Route::post('/manager/reports', [ManagerReportController::class, 'store'])->name('manager.reports.store');
@@ -71,7 +79,7 @@ Route::middleware('auth')->group(function () {
 
     foreach (['staff', 'landlord'] as $workspace) {
         Route::get('/'.$workspace.'/{section}', [WorkspaceController::class, 'index'])
-            ->where('section', $workspace === 'staff' ? 'documents|training|announcements|search' : 'properties|reports|documents|approvals')
+            ->where('section', $workspace === 'staff' ? 'documents|training|announcements|search' : 'properties|reports|documents|approvals|announcements')
             ->name($workspace.'.index');
     }
     Route::get('/workspace/items/{item}', [WorkspaceController::class, 'show'])->whereNumber('item')->name('workspace.show');
@@ -81,6 +89,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/workspace/items/{item}/decision', [WorkspaceController::class, 'decide'])->whereNumber('item')->name('workspace.decide');
 
     Route::middleware('admin')->prefix('admin')->name('admin.')->group(function () {
+        Route::post('/users/{user}/permissions', [UserPermissionController::class, 'update'])->whereNumber('user')->name('users.permissions');
+        Route::get('/users/{user}/preview', [UserPermissionController::class, 'preview'])->whereNumber('user')->name('users.preview');
         Route::get('/report-reviews', [ReportReviewController::class, 'index'])->name('report-reviews.index');
         Route::get('/report-reviews/{submission}/download', [ReportReviewController::class, 'download'])->whereNumber('submission')->name('report-reviews.download');
         Route::post('/report-reviews/{submission}', [ReportReviewController::class, 'decide'])->whereNumber('submission')->name('report-reviews.decide');
@@ -120,7 +130,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/approvals/create-approval', [AdminController::class, 'create'])->defaults('module', 'approvals')->name('approvals.create');
         Route::get('/announcements/view-announcements', [AdminController::class, 'announcements'])->name('announcements.view');
         Route::get('/announcements/create-announcement', [AdminController::class, 'create'])->defaults('module', 'announcements')->name('announcements.create');
-        Route::get('/notifications/view-notifications', [AdminController::class, 'notifications'])->name('notifications.view');
+        Route::post('/queue/{uuid}/retry', [QueueOperationsController::class, 'retry'])->whereUuid('uuid')->middleware('throttle:10,1')->name('queue.retry');
+        Route::get('/notifications/view-notifications', [QueueOperationsController::class, 'index'])->name('notifications.view');
         Route::get('/notifications/create-notification', [AdminController::class, 'create'])->defaults('module', 'notifications')->name('notifications.create');
         Route::get('/audit-logs/view-audit-logs', [AdminController::class, 'auditLogs'])->name('audit.view');
         Route::get('/integrations/view-integrations', [AdminController::class, 'integrations'])->name('integrations.view');

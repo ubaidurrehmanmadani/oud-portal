@@ -34,7 +34,15 @@ class NotifyWorkspacePublication implements ShouldQueue
             return;
         }
         $users = User::with('profile')->where('approval_status', 'approved')->whereNull('suspended_at');
-        if ($item->audience === 'landlord') {
+        if ($item->kind === 'announcement' && $item->target_mode !== 'legacy') {
+            match ($item->target_mode) {
+                'all' => null,
+                'users' => $users->whereIn('id', $item->targetUsers()->select('users.id')),
+                'departments' => $users->whereIn('role', [UserRole::EMPLOYEE, UserRole::DEPARTMENT_MANAGER])->whereIn('department_id', $item->targetDepartments()->select('departments.id')),
+                'properties' => $users->where('role', UserRole::LANDLORD)->whereHas('properties', fn ($q) => $q->whereIn('properties.id', $item->targetProperties()->select('properties.id'))),
+                default => $users->whereRaw('1 = 0'),
+            };
+        } elseif ($item->audience === 'landlord') {
             $users->where('role', UserRole::LANDLORD)->whereHas('properties', fn ($q) => $q->where('properties.id', $item->property_id));
         } elseif ($item->audience === 'staff') {
             $users->where('role', UserRole::EMPLOYEE)->when($item->department_id, fn ($q) => $q->where('department_id', $item->department_id));

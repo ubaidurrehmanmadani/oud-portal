@@ -23,7 +23,7 @@ class SetupLifecycleController extends Controller
                 abort_unless($record->archived_at, 409, __('setup.archive_first'));
                 $column = $kind.'_id';
                 $assigned = $kind === 'department' ? User::where('department_id', $id)->exists() : $record->users()->exists();
-                abort_if($assigned || WorkspaceItem::where($column, $id)->exists() || ReportSubmission::where($column, $id)->exists(), 409, __('setup.in_use'));
+                abort_if(DB::table('announcement_'.$kind)->where($column, $id)->exists() || $assigned || WorkspaceItem::where($column, $id)->exists() || ReportSubmission::where($column, $id)->exists(), 409, __('setup.in_use'));
                 $record->delete();
             } else {
                 abort_if(($data['action'] === 'archive') === ($record->archived_at !== null), 409);

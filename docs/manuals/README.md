@@ -17,3 +17,7 @@ The renderer checks screen readiness and page overflow. Inspect PDFs after conte
 Version 3 (15 September 2026) adds manager workspace, report submission/correction and Admin review/publication guidance. Ten pages per language. Synthetic manager/property/submission records are rendered in the isolated in-memory database; no attachment is presented as a client-supplied original. The source helper renders each screen with the appropriate role.
 
 In-product access: after login choose **User manual / دليل المستخدم**, or visit `/help/manuals`. Both languages can be viewed and downloaded. Direct authenticated PDF URLs: `/help/manuals/en.pdf` and `/help/manuals/ar.pdf`; `?download=1` forces a download. Both PDF artifacts must ship with deployments.
+
+Version 4 adds Admin removal of unused suspended accounts and its history-retention rule (eleven pages per language).
+
+Version 5 adds targeted announcements, supported role permission overrides and content previews, delegated department employee management, and background queue monitoring/retries (fifteen pages per language). The 16 September continuation rebuilds these from the current Blade views with isolated synthetic data.

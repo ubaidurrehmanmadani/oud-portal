@@ -1,5 +1,22 @@
 # Backend delivery and architecture ledger
 
+## Continuation checkpoint — 16 September 2026
+
+Resumed the existing uncommitted Admin/Manager implementation and verified it rather than restarting. This entry supersedes earlier statements that targeted announcements and delegated permissions are unimplemented.
+
+- Admin announcements support everyone, selected people, departments or properties. Direct access and queued notification delivery recheck the recipient's current scope; drafts and future publications remain hidden.
+- Admins can set role-default/allow/deny overrides for the supported Manager and Landlord capabilities, with password confirmation and audit history. Financial submission permission remains separate. Overrides do not bypass department/property assignments; role changes clear overrides. A read-only preview shows content visible to the selected account.
+- Explicitly delegated Managers can create and edit Employees in their active department, and suspend, restore, request password recovery or remove unused suspended Employees. Sensitive actions require the Manager's password. Retained history and announcement references block removal. Delegated removal permits removal of the employee's own department assignment; Admin removal still requires an unassigned account.
+- Admin Notifications now shows database queue counts and failed-job metadata without raw payloads or exceptions. Password-confirmed retries are restricted to supported upload, cleanup and publication jobs; recovery jobs require a fresh recovery request. Fixed queue counts to inspect the configured queue database/table, including custom connection names, rather than checking the application database.
+- Suspension and completed password reset increment a session generation; old protected sessions are rejected after restore. Fresh login records the current generation.
+- Local MySQL migration status confirms `2026_09_15_230000_add_announcement_targets_and_permissions` and `2026_09_15_231000_add_session_generation` have run. No migration or account-data mutation was needed today.
+
+Verification: existing full isolated SQLite suite **87 tests / 2,646 assertions passed**. After the queue-monitor fix, the focused suite passed **3 tests / 17 assertions**, including a separate in-memory queue database, custom table and missing-table case. Pint, Blade compilation and JavaScript syntax checks passed. Manual version 5 includes the four additional workflows in English and Arabic.
+
+Both version 5 PDFs were rebuilt successfully; HTML readiness/overflow checks and native PDFKit validation passed (15 pages per language). Diff whitespace checks passed. No screenshot files were retained.
+
+Next work: employee consumption/notification acceptance checks, then the remaining landlord decision workflow. Multi-owner approval policy must be confirmed before changing decision semantics. Malware scanning, workbook mapping, Odoo contract/integration and production worker/mail/backup/load acceptance remain outstanding. Queue counts do not prove worker health or delivery; retrying external queues is not transactionally atomic with the application database. These local results do not verify Laravel Cloud.
+
 ## Owner instructions — 14 September 2026
 
 These requirements apply to every subsequent implementation chunk:
@@ -123,3 +140,11 @@ Manual validation: version 3 PDFs regenerated directly from current Blade HTML; 
 ## In-product user manual — 15 September 2026
 
 Added a shared sidebar link and authenticated `/help/manuals` page with both language PDFs. PDF routes support inline viewing and explicit download, use allowlisted filenames and private/no-store/nosniff responses, and preserve approval/suspension guards. Local focused verification: **2 tests / 97 assertions passed**, covering all roles, both locales, navigation, downloads, invalid locale and blocked/guest access. Pint, Blade compilation and whitespace checks passed. Deployment must include the PDF artifacts; no production deployment is claimed.
+
+## Next Admin workflow: removal of unused users — 15 September 2026
+
+Implemented permanent removal of unused suspended accounts via the existing Admin lifecycle endpoint. This conservative retention rule preserves established records: department/property assignments, login events, authored/decided content, submissions, reviews, audit activity and approval-review references block deletion. Active accounts and self-deletion are blocked. Admin authentication, current-password verification, explicit deletion confirmation, CSRF and lifecycle throttling apply. The target is locked inside the existing lifecycle transaction; successful removal and its audit event commit together. Profile cleanup uses the existing foreign key; recovery tokens are removed so a later account with the same email cannot inherit them. No migration or deletion of real users was performed during implementation.
+
+The user edit screen exposes a separate bilingual deletion form only for suspended accounts other than the acting Admin. Successful deletion returns to the Users list. Accounts with retained history continue to use suspension; broad historical-data erasure is not implemented. Added regression tests for removal/profile/token cleanup, authorization/password/confirmation, history preservation, bilingual UI and rollback on audit failure. Manual version 4 documents this workflow in both languages.
+
+Verification: full regression suite **78 tests / 2,528 assertions passed** after initial removal implementation. After adding protection for the target's own recorded account-approval decision, focused removal suite **5 tests / 26 assertions passed**. Pint, Blade compilation and whitespace checks passed. Both updated PDFs contain eleven pages and passed page-count checks. Accounts with an `approved_by` or `approval_decided_at` value are retained, in addition to accounts that approved others. No real account was deleted; these checks used isolated SQLite test data.

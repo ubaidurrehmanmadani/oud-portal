@@ -68,6 +68,25 @@ class User extends Authenticatable
         return $this->belongsToMany(Property::class);
     }
 
+    public function capabilityDefaults(): array
+    {
+        return match ($this->role) {
+            UserRole::DEPARTMENT_MANAGER => ['manage_documents' => true, 'manage_training' => true, 'manage_announcements' => true, 'manage_employees' => false],
+            UserRole::LANDLORD => ['view_reports' => true, 'view_documents' => true, 'download_files' => true, 'decide_approvals' => true],
+            default => [],
+        };
+    }
+
+    public function allows(string $capability): bool
+    {
+        if ($this->role === UserRole::ADMIN) {
+            return true;
+        }
+        $defaults = $this->capabilityDefaults();
+
+        return array_key_exists($capability, $defaults) && (bool) ($this->permission_overrides[$capability] ?? $defaults[$capability]);
+    }
+
     public function canSubmitFinancialReports(): bool
     {
         return $this->role === UserRole::DEPARTMENT_MANAGER && $this->department_id && $this->can_submit_financial_reports;
@@ -91,6 +110,7 @@ class User extends Authenticatable
     protected function casts(): array
     {
         return [
+            'permission_overrides' => 'array',
             'suspended_at' => 'datetime',
             'email_verified_at' => 'datetime',
             'last_login_at' => 'datetime',
