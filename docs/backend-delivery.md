@@ -1,5 +1,13 @@
 # Backend delivery and architecture ledger
 
+## Admin/Manager continuation — 17 September 2026
+
+- Completed verification of the prior client-testing seeder work. A fresh seed creates nine accounts, four departments and the five existing reference properties. Manager reporting/delegation, Employee departments and the restricted Landlord assignment match the client walkthrough. Password overrides apply only on creation; repeat seeding preserves changed passwords, suspensions, grants and removed assignments. Tests also verify correction of the legacy Manager email without resetting its password.
+- Deploy the seed-checkpoint migration before seeding. The first client setup grants the documented test access; its checkpoint prevents later deployment runs from reapplying it. No production seed/migration or mail delivery was performed in this continuation.
+- Closed the training publication-notification gap. Both text-only publication and completed private-file processing now enqueue the existing publication notification. Repeated processing does not duplicate the publication dispatch, and delivery checks current recipient department/access. Normal published edits do not promise a fresh notification; delivery still needs workers and mail configuration.
+- Full isolated local regression suite: **94 tests / 2,717 assertions passed**. Pint, Blade compilation and whitespace checks passed. EN/AR manual PDFs regenerated successfully with HTML readiness/overflow checks. Client testing instructions and deployment notes were updated.
+- Remaining external/requirements-dependent work: actual workbook-to-field mapping, malware scanning service selection, Odoo contract and credentials, multi-owner decision policy, and production mail/worker/backup/load/concurrency acceptance. Account-approval emails and a personal notification inbox remain unimplemented. Core Admin/Manager workflow completion is not a production-readiness claim.
+
 ## Continuation checkpoint — 16 September 2026
 
 Resumed the existing uncommitted Admin/Manager implementation and verified it rather than restarting. This entry supersedes earlier statements that targeted announcements and delegated permissions are unimplemented.

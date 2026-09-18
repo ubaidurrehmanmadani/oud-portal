@@ -62,7 +62,7 @@ Expected: accounts and assignments persist; duplicate email is rejected. Manager
 8. Repeat creation/publication for `TEST Training` and a text-only `TEST Department Notice`. Employee A should see both in Training/Announcements; Employee B should not.
 9. Exercise Manage content search, type/status filters and editing. Create an extra disposable document, open Edit, expand the removal control and confirm removal.
 
-Expected: department scope applies to lists, direct links and downloads. Drafts and content awaiting required file processing stay hidden. Removed disposable content disappears. Training visibility is testable; a training email is not promised by the current publication dispatch flow.
+Expected: department scope applies to lists, direct links and downloads. Drafts and content awaiting required file processing stay hidden. Removed disposable content disappears. Training publication also queues email for eligible department employees after required file processing.
 
 ## 5. Admin: test targeted announcements
 

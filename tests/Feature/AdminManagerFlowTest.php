@@ -141,4 +141,29 @@ class AdminManagerFlowTest extends TestCase
         $owner->properties()->detach();
         $this->assertFalse($notice->shouldSend($owner, 'mail'));
     }
+
+    public function test_training_publication_waits_for_processing_and_respects_department_access(): void
+    {
+        [$admin, $manager] = $this->fixture();
+        Notification::fake();
+        $employee = User::factory()->create(['department_id' => $manager->department_id]);
+        $other = User::factory()->create();
+        Storage::disk('local')->put('workspace/training.txt', 'Training material');
+        $item = WorkspaceItem::create(['title' => 'Training publication', 'kind' => 'training', 'department_id' => $manager->department_id,
+            'audience' => 'staff', 'status' => 'draft', 'file_path' => 'workspace/training.txt', 'file_processing_required' => true]);
+        $this->actingAs($manager)->put(route('content.update', $item), ['title' => $item->title, 'audience' => 'staff', 'status' => 'published'])->assertSessionHasNoErrors();
+        Queue::assertNotPushed(NotifyWorkspacePublication::class);
+        (new ProcessPrivateUpload('workspace', $item->id, $item->file_path))->handle();
+        (new ProcessPrivateUpload('workspace', $item->id, $item->file_path))->handle();
+        Queue::assertPushed(NotifyWorkspacePublication::class, 1);
+        (new NotifyWorkspacePublication($item->id))->handle();
+        Notification::assertSentTo($employee, WorkspacePublished::class);
+        Notification::assertNotSentTo($other, WorkspacePublished::class);
+        $employee->update(['department_id' => null]);
+        $this->assertFalse((new WorkspacePublished($item->id))->shouldSend($employee->fresh(), 'mail'));
+
+        Queue::fake();
+        $this->actingAs($manager)->post(route('content.store'), ['kind' => 'training', 'title' => 'Text training', 'audience' => 'staff', 'status' => 'published'])->assertSessionHasNoErrors();
+        Queue::assertPushed(NotifyWorkspacePublication::class, 1);
+    }
 }

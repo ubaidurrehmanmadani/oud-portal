@@ -41,7 +41,7 @@ class DatabaseSeeder extends Seeder
                     'name' => $account['name'],
                     'role' => $account['role'],
                     'role_id' => Role::where('code', $account['role']->value)->value('id'),
-                    'password' => Hash::make('Test#12345'),
+                    'password' => Hash::make(env('CLIENT_TEST_PASSWORD', 'Test#12345')),
                     'email_verified_at' => now(),
                     'approval_status' => 'approved',
                 ],
@@ -49,7 +49,7 @@ class DatabaseSeeder extends Seeder
             $user->profile()->firstOrCreate([], ['preferred_locale' => 'en']);
         }
 
-        $demoPassword = env('DEMO_USER_PASSWORD', 'Test#12345');
+        $demoPassword = env('DEMO_USER_PASSWORD', env('CLIENT_TEST_PASSWORD', 'Test#12345'));
         foreach ([
             ['name' => 'Ubaid Landlord', 'email' => 'ubaid+landlord@gmail.com', 'role' => UserRole::LANDLORD],
             ['name' => 'Ubaid Employee', 'email' => 'ubaid+employee@gmail.com', 'role' => UserRole::EMPLOYEE],

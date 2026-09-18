@@ -40,6 +40,8 @@ Existing properties: OUD Reserve, OUD Square, OUD Dunes, La Perle East, La Perle
 
 ## 1. Admin — prepare the existing accounts
 
+On a newly seeded deployment these assignments and permissions are now preconfigured. Review them rather than creating duplicate accounts. The restricted Landlord in step 2 is also precreated as `ubaid+restricted_landlord@gmail.com`; use its existing account. Repeat seeding preserves later test changes, so verify the settings before a new test round.
+
 1. Log in as Admin and open **Users**.
 2. Edit **Ubaid Property Manager**. Confirm the corrected email `ubaid+property_manager@gmail.com`, Department Manager role and Property Management department.
 3. Keep OUD Reserve and OUD Square selected. Enable **Allow financial report submissions** and save.
@@ -92,7 +94,7 @@ Expected: Property Employee can access the published file; Hospitality Employee 
 3. As Hospitality Employee, check the same lists and copied links.
 4. As Hospitality Manager, try editing the Property Management content using a copied edit URL.
 
-Expected: Property Employee sees the published items. The other department cannot consume or manage this scoped content. Training email delivery is not part of this test.
+Expected: Property Employee sees the published items. The other department cannot consume or manage this scoped content. Training publication queues email for eligible department employees; delivery requires configured mail and running workers.
 
 ## 6. Admin — target announcements
 

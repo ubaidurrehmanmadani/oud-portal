@@ -112,11 +112,28 @@ Configure the server deployment hook to run `composer deploy` (or the two Larave
 | Landlord | landlord@gmail.com | Test#12345 |
 | Employee | employee@gmail.com | Test#12345 |
 
-These accounts are created approved with hashed passwords and profiles. Existing accounts with these emails are preserved, including changed passwords and permissions. `DEMO_USER_PASSWORD` applies only to the older Ubaid demo accounts. The landlord receives the seeded property assignments; an Admin must assign the manager a department and any required reporting permissions through account management. Uploading files alone does not run seeders: the server deployment hook must be configured.
+These accounts are created approved with hashed passwords and profiles. Existing accounts with these emails are preserved, including changed passwords and permissions. `DEMO_USER_PASSWORD` applies only to the older Ubaid demo accounts. The client testing setup below now assigns the seeded Managers their departments and initial reporting grants; Admins manage subsequent changes through account management. Uploading files alone does not run seeders: the server deployment hook must be configured.
 
 The login credentials card is temporarily enabled in production as well as locally. It shows the four deployment accounts above. To hide it later, set `DEMO_ACCESS_ENABLED=false` on the server and rebuild the configuration cache with `php artisan config:cache`. Keep `APP_ENV=production`.
 
 ## Backend delivery and user manuals
+
+### Client test data — 17 September 2026
+
+The existing deployment commands (`php artisan migrate --force`, then `php artisan db:seed --force`) now include `ClientTestingSeeder`. Migration `2026_09_16_180000_create_seed_checkpoints` must run first. The first client setup creates four departments and prepares these walkthrough accounts:
+
+| Login | Initial department / properties | Initial grants |
+| --- | --- | --- |
+| `ubaid+property_manager@gmail.com` | Property Management / OUD Reserve, OUD Square | Financial submissions; manage department employees |
+| `manager@gmail.com` | Hospitality Management / OUD Dunes | Financial submissions |
+| `ubaid+employee@gmail.com` | Property Management | Employee access |
+| `employee@gmail.com` | Hospitality Management | Employee access |
+| `ubaid+landlord@gmail.com`, `saad+landlord@gmail.com`, `landlord@gmail.com` | All five reference properties | Landlord access |
+| `ubaid+restricted_landlord@gmail.com` | OUD Reserve only | Restricted Landlord test account |
+
+Together with `admin@gmail.com`, a fresh database contains nine seeded accounts. New accounts default to `Test#12345`; set `CLIENT_TEST_PASSWORD` before initial seeding to override it. `DEMO_USER_PASSWORD`, when set, takes precedence for the two older Ubaid demo accounts. Existing passwords are preserved. A legacy `ubaid+propert_manager@gmail.com` account is renamed only if the corrected address is unused.
+
+The client setup checkpoint prevents later deployments from re-enabling revoked grants or restoring removed assignments. Existing roles, nonempty department assignments and explicit employee-management overrides are retained; the first setup enables reporting for the two matching test Managers and adds their walkthrough properties. Reference importing initializes only unassigned landlords once and does not expand an existing restricted assignment. Do not delete checkpoints to repeat setup; use Admin screens for subsequent changes. Test documents, submissions, decisions and disposable deletion-test accounts remain steps for the tester to create. The existing five-property reference content remains included. Server execution is not verified by local tests.
 
 For a standalone walkthrough using the owner's existing departments, properties and corrected Manager login, see [the client testing guide](docs/client-testing-guide.md). Supply the client testing URL and passwords privately before sharing; its starting account snapshot describes the local environment.
 
